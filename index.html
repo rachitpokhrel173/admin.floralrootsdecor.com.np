@@ -1,1577 +1,2571 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Floral Roots Admin Panel</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-/* ═══════════════════════════════════════════
-   CONFIG — FILL THESE IN
-═══════════════════════════════════════════ */
-:root {
-  /* ── Supabase ── */
-  --supabase-url: "YOUR_SUPABASE_PROJECT_URL";     /* e.g. https://xxxx.supabase.co */
-  --supabase-anon-key: "YOUR_SUPABASE_ANON_KEY";   /* long JWT string from Supabase dashboard */
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Floral Roots Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --cream: #fdfaf6;
+      --cream-dark: #f5f0ea;
+      --beige: #c8b89a;
+      --gold: #b8965c;
+      --gold-light: #d4b07a;
+      --text: #3a2e26;
+      --text-mid: #6b5a4e;
+      --text-muted: #9c8b80;
+      --border: #e0d4c8;
+      --green-dark: #1e4d35;
+      --green-mid: #2d7a52;
+      --danger: #c0392b;
+      --success: #27ae60;
+      --warn: #e67e22;
+      --sidebar-w: 240px;
+    }
 
-  /* ── Sparrow SMS ── */
-  --sparrow-token: "YOUR_SPARROW_SMS_API_TOKEN";   /* from sparrowsms.com dashboard */
-  --sparrow-from: "FloralRoots";                    /* sender name (max 11 chars) */
-  --admin-phone: "977XXXXXXXXXX";                   /* your phone for alerts */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-  /* ── Theme ── */
-  --cream: #fdfaf6;
-  --cream-dark: #f5f0ea;
-  --beige: #c8b89a;
-  --beige-light: #e8ddd0;
-  --gold: #b8965c;
-  --gold-light: #d4b07a;
-  --text: #3a2e26;
-  --text-mid: #6b5a4e;
-  --text-muted: #9c8b80;
-  --border: #e0d4c8;
-  --green-dark: #1e4d35;
-  --danger: #c0392b;
-  --success: #27ae60;
-  --warn: #e67e22;
-  --sidebar-w: 240px;
-}
+    html {
+      scroll-behavior: smooth
+    }
 
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Jost',sans-serif;background:var(--cream-dark);color:var(--text);min-height:100vh;display:flex}
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream-dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex
+    }
 
-/* ═══ LOGIN ═══ */
-.login-page{
-  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  padding:24px;background:
-    radial-gradient(circle at top left, rgba(184,150,92,.18), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(30,77,53,.18), transparent 30%),
-    linear-gradient(135deg,#f8f2ea 0%,#efe5d8 100%);
-  z-index:300;
-}
-.login-shell{
-  width:min(940px,100%);display:grid;grid-template-columns:1.1fr .9fr;overflow:hidden;
-  border:1px solid rgba(160,135,108,.18);border-radius:24px;
-  background:rgba(253,250,246,.86);backdrop-filter:blur(10px);
-  box-shadow:0 28px 70px rgba(68,48,30,.16);
-}
-.login-hero{
-  padding:42px 40px;background:linear-gradient(160deg,var(--green-dark),#123125 72%);
-  color:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:520px;
-}
-.login-brand{font-family:'Playfair Display',serif;font-size:2.15rem;line-height:1.05;max-width:12ch}
-.login-brand span{display:block;font-size:1rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);font-family:'Jost',sans-serif;margin-top:14px}
-.login-hero p{max-width:28ch;color:rgba(255,255,255,.72);font-size:.95rem;line-height:1.7;margin-top:16px}
-.login-badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
-.login-badge{padding:7px 12px;border-radius:999px;font-size:.72rem;letter-spacing:.04em;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.82)}
-.login-form{
-  padding:42px 38px;display:flex;flex-direction:column;justify-content:center;gap:18px
-}
-.login-form h1{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--text)}
-.login-form .sub{font-size:.82rem;color:var(--text-muted);line-height:1.6;max-width:36ch}
-.login-field{display:flex;flex-direction:column;gap:6px}
-.login-field label{font-size:.72rem;color:var(--text-mid);text-transform:uppercase;letter-spacing:.08em}
-.login-field input{
-  width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--cream);
-  color:var(--text);font-size:.9rem;font-family:'Jost',sans-serif;transition:border-color .2s,box-shadow .2s;
-}
-.login-field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,150,92,.12)}
-.login-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px}
-.login-meta{font-size:.74rem;color:var(--text-muted)}
-.login-error{display:none;font-size:.78rem;color:var(--danger);background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.18);border-radius:10px;padding:10px 12px}
-@media(max-width:760px){
-  .login-shell{grid-template-columns:1fr}
-  .login-hero{min-height:auto;padding:34px 28px}
-  .login-form{padding:30px 24px}
-}
+    /* LOGIN */
+    .login-page {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at top left, rgba(184, 150, 92, .18), transparent 32%), radial-gradient(circle at bottom right, rgba(30, 77, 53, .18), transparent 30%), linear-gradient(135deg, #f8f2ea, #efe5d8);
+      z-index: 300
+    }
 
-/* ═══ SIDEBAR ═══ */
-.sidebar{
-  width:var(--sidebar-w);min-height:100vh;background:var(--green-dark);
-  display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;
-  transition:transform .3s ease;
-}
-.sidebar-logo{
-  padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,.1);
-}
-.sidebar-logo .brand{font-family:'Playfair Display',serif;font-size:1.05rem;color:#fff;font-style:italic;line-height:1.3}
-.sidebar-logo .sub{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:3px}
-.sidebar-nav{flex:1;padding:16px 0}
-.nav-section{margin-bottom:6px}
-.nav-section-label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.3);padding:12px 24px 4px}
-.nav-item{
-  display:flex;align-items:center;gap:10px;padding:10px 24px;
-  font-size:.82rem;color:rgba(255,255,255,.65);cursor:pointer;
-  transition:all .2s;border-left:2px solid transparent;font-weight:400;
-  text-decoration:none;user-select:none;
-}
-.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
-.nav-item.active{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--gold-light)}
-.nav-item .ico{width:16px;height:16px;opacity:.7;flex-shrink:0}
-.nav-item.active .ico{opacity:1}
-.nav-badge{margin-left:auto;background:var(--gold);color:#fff;border-radius:10px;padding:1px 7px;font-size:.65rem;font-weight:600}
-.sidebar-footer{padding:16px 24px;border-top:1px solid rgba(255,255,255,.1)}
-.sidebar-footer .admin-name{font-size:.78rem;color:rgba(255,255,255,.6)}
-.sidebar-footer .logout-btn{font-size:.72rem;color:rgba(255,255,255,.35);cursor:pointer;margin-top:3px;transition:color .2s}
-.sidebar-footer .logout-btn:hover{color:rgba(255,255,255,.7)}
+    .login-shell {
+      width: min(940px, 100%);
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      overflow: hidden;
+      border: 1px solid rgba(160, 135, 108, .18);
+      border-radius: 24px;
+      background: rgba(253, 250, 246, .86);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 28px 70px rgba(68, 48, 30, .16)
+    }
 
-/* ═══ TOPBAR ═══ */
-.topbar{
-  position:fixed;top:0;left:var(--sidebar-w);right:0;height:58px;
-  background:var(--cream);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;z-index:90;
-}
-.topbar-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:14px}
-.topbar-date{font-size:.75rem;color:var(--text-muted)}
-.notif-btn{
-  position:relative;width:34px;height:34px;border-radius:8px;
-  background:var(--cream-dark);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:border-color .2s;
-}
-.notif-btn:hover{border-color:var(--gold)}
-.notif-dot{
-  position:absolute;top:6px;right:6px;width:8px;height:8px;
-  border-radius:50%;background:var(--danger);border:2px solid var(--cream);
-  display:none;
-}
+    .login-hero {
+      padding: 42px 40px;
+      background: linear-gradient(160deg, var(--green-dark), #123125 72%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 520px
+    }
 
-/* ═══ MAIN CONTENT ═══ */
-.main{margin-left:var(--sidebar-w);margin-top:58px;flex:1;padding:28px}
+    .login-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.15rem;
+      line-height: 1.05;
+      max-width: 12ch
+    }
 
-/* ═══ PAGE SECTIONS ═══ */
-.page{display:none}
-.page.active{display:block}
+    .login-brand span {
+      display: block;
+      font-size: 1rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .55);
+      font-family: 'Jost', sans-serif;
+      margin-top: 14px
+    }
 
-/* ═══ CARDS / STATS ═══ */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
-.stat-card{
-  background:var(--cream);border:1px solid var(--border);border-radius:12px;
-  padding:18px 20px;position:relative;overflow:hidden;
-}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--gold),var(--gold-light));
-}
-.stat-card.green::before{background:linear-gradient(90deg,#1e4d35,#2d7a52)}
-.stat-card.warn::before{background:linear-gradient(90deg,#c0392b,#e74c3c)}
-.stat-card.blue::before{background:linear-gradient(90deg,#2980b9,#3498db)}
-.stat-icon{font-size:1.4rem;margin-bottom:10px}
-.stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:600;color:var(--text)}
-.stat-label{font-size:.72rem;color:var(--text-muted);margin-top:3px;text-transform:uppercase;letter-spacing:.08em}
+    .login-hero p {
+      max-width: 28ch;
+      color: rgba(255, 255, 255, .72);
+      font-size: .95rem;
+      line-height: 1.7;
+      margin-top: 16px
+    }
 
-/* ═══ SECTION HEADER ═══ */
-.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.sec-title{font-family:'Playfair Display',serif;font-size:1.1rem}
-.sec-sub{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+    .login-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px
+    }
 
-/* ═══ BUTTON ═══ */
-.btn{
-  display:inline-flex;align-items:center;gap:7px;padding:9px 18px;
-  border-radius:8px;font-size:.8rem;font-weight:500;cursor:pointer;
-  border:1px solid transparent;transition:all .2s;font-family:'Jost',sans-serif;
-}
-.btn-gold{background:var(--green-dark);color:#fff;border-color:var(--green-dark)}
-.btn-gold:hover{background:#163d29}
-.btn-outline{background:transparent;color:var(--text);border-color:var(--border)}
-.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
-.btn-danger{background:transparent;color:var(--danger);border-color:var(--danger)}
-.btn-danger:hover{background:var(--danger);color:#fff}
-.btn-sm{padding:5px 12px;font-size:.75rem}
-.btn-sms{background:#0d7a4e;color:#fff;border-color:#0d7a4e}
-.btn-sms:hover{background:#095e3a}
+    .login-badge {
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: .72rem;
+      background: rgba(255, 255, 255, .09);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: rgba(255, 255, 255, .82)
+    }
 
-/* ═══ TABLE ═══ */
-.table-wrap{background:var(--cream);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.data-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.data-table th{
-  background:var(--cream-dark);padding:11px 16px;text-align:left;
-  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);
-}
-.data-table td{padding:12px 16px;border-bottom:1px solid rgba(224,212,200,.4);vertical-align:middle}
-.data-table tr:last-child td{border-bottom:none}
-.data-table tr:hover td{background:rgba(248,244,238,.8)}
+    .login-form {
+      padding: 42px 38px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px
+    }
 
-/* ═══ BADGE ═══ */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:500}
-.badge-pending{background:#fef3cd;color:#856404}
-.badge-confirmed{background:#d4edda;color:#155724}
-.badge-cancelled{background:#f8d7da;color:#721c24}
-.badge-completed{background:#d1ecf1;color:#0c5460}
-.badge-work{background:#E6F1FB;color:#185FA5}
-.badge-personal{background:#EAF3DE;color:#3B6D11}
-.badge-client{background:#FAECE7;color:#993C1D}
-.badge-wedding{background:#fce4ec;color:#880e4f}
-.badge-event{background:#e8eaf6;color:#283593}
+    .login-form h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      color: var(--text)
+    }
 
-/* ═══ FORM ═══ */
-.form-card{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:24px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.form-grid.col3{grid-template-columns:1fr 1fr 1fr}
-.form-grid.full{grid-template-columns:1fr}
-.form-group label{display:block;font-size:.72rem;color:var(--text-mid);margin-bottom:5px;font-weight:500}
-.form-group input,.form-group select,.form-group textarea{
-  width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;
-  font-size:.82rem;font-family:'Jost',sans-serif;background:var(--cream);
-  color:var(--text);transition:border-color .2s;
-}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
-  outline:none;border-color:var(--gold);
-}
-.form-group textarea{resize:vertical;min-height:80px}
-.form-actions{display:flex;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
+    .login-form .sub {
+      font-size: .82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 36ch
+    }
 
-/* ═══ CALENDAR ═══ */
-.cal-wrap{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:20px}
-.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.cal-nav-btn{
-  width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
-  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:border-color .2s;font-size:1.1rem;color:var(--text-mid);
-}
-.cal-nav-btn:hover{border-color:var(--gold)}
-.cal-month{font-family:'Playfair Display',serif;font-size:1rem}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-dow{text-align:center;font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;padding:6px 0}
-.cal-cell{
-  aspect-ratio:1;border-radius:8px;border:1px solid transparent;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  padding:5px 4px;cursor:pointer;transition:all .2s;position:relative;
-}
-.cal-cell:hover{background:var(--cream-dark);border-color:var(--border)}
-.cal-cell.empty{cursor:default}
-.cal-cell.today{border-color:var(--gold)!important;background:rgba(184,150,92,.07)}
-.cal-cell .cn{font-size:.78rem;font-weight:500}
-.cal-cell .dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;justify-content:center}
-.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.dot-booking{background:#b8965c}
-.dot-event{background:#1e4d35}
-.dot-alert{background:#c0392b}
-.cal-cell.has-alert{border-left:2px solid var(--danger)}
-.cal-detail{background:var(--cream-dark);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px;display:none}
-.cal-detail-title{font-size:.85rem;font-weight:600;margin-bottom:10px}
+    .login-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
 
-/* ═══ ALERT BANNER ═══ */
-.alert-banner{
-  background:#fef3cd;border:1px solid #ffc107;border-radius:10px;
-  padding:12px 16px;margin-bottom:20px;font-size:.82rem;color:#664d03;display:none;
-}
-.alert-banner.danger{background:#f8d7da;border-color:#f5c6cb;color:#721c24}
+    .login-field label {
+      font-size: .72rem;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: .08em
+    }
 
-/* ═══ CONFIG WARNING ═══ */
-.config-warn{
-  background:linear-gradient(135deg,#fff3cd,#ffeaa7);
-  border:1px solid #ffc107;border-radius:10px;padding:16px 20px;
-  margin-bottom:24px;font-size:.82rem;
-}
-.config-warn h4{font-size:.85rem;font-weight:600;color:#856404;margin-bottom:6px}
-.config-warn code{
-  background:rgba(0,0,0,.07);padding:2px 6px;border-radius:4px;
-  font-family:monospace;font-size:.78rem;
-}
+    .login-field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--cream);
+      color: var(--text);
+      font-size: .9rem;
+      font-family: 'Jost', sans-serif;
+      transition: border-color .2s, box-shadow .2s
+    }
 
-/* ═══ SMS LOG ═══ */
-.sms-log-item{
-  border:1px solid var(--border);border-radius:8px;padding:12px 14px;
-  margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;
-  font-size:.8rem;background:var(--cream);
-}
-.sms-log-meta{color:var(--text-muted);font-size:.72rem;margin-top:3px}
+    .login-field input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184, 150, 92, .12)
+    }
 
-/* ═══ MODAL ═══ */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(30,20,10,.5);backdrop-filter:blur(3px);
-  z-index:200;display:none;align-items:center;justify-content:center;
-}
-.modal-overlay.open{display:flex}
-.modal{
-  background:var(--cream);border-radius:14px;padding:28px;width:90%;max-width:520px;
-  max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);
-}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-.modal-title{font-family:'Playfair Display',serif;font-size:1.05rem}
-.modal-close{
-  width:28px;height:28px;border-radius:6px;border:1px solid var(--border);
-  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:1rem;color:var(--text-muted);transition:all .2s;
-}
-.modal-close:hover{background:var(--cream-dark);color:var(--text)}
+    .login-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 6px
+    }
 
-/* ═══ TOAST ═══ */
-.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:500;display:flex;flex-direction:column;gap:8px}
-.toast{
-  background:var(--green-dark);color:#fff;padding:11px 18px;border-radius:9px;
-  font-size:.8rem;display:flex;align-items:center;gap:9px;
-  box-shadow:0 8px 24px rgba(0,0,0,.2);animation:slideIn .3s ease;
-  min-width:240px;
-}
-.toast.error{background:var(--danger)}
-.toast.warn{background:var(--warn)}
-@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+    .login-meta {
+      font-size: .74rem;
+      color: var(--text-muted)
+    }
 
-/* ═══ LOADING ═══ */
-.loading{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+    .login-error {
+      display: none;
+      font-size: .78rem;
+      color: var(--danger);
+      background: rgba(192, 57, 43, .08);
+      border: 1px solid rgba(192, 57, 43, .18);
+      border-radius: 10px;
+      padding: 10px 12px
+    }
 
-/* ═══ EMPTY STATE ═══ */
-.empty{text-align:center;padding:40px;color:var(--text-muted);font-size:.85rem}
-.empty-icon{font-size:2.5rem;margin-bottom:10px;opacity:.4}
+    @media(max-width:760px) {
+      .login-shell {
+        grid-template-columns: 1fr
+      }
 
-/* ═══ TWO COL LAYOUT ═══ */
-.two-col{display:grid;grid-template-columns:1fr 340px;gap:20px}
+      .login-hero {
+        min-height: auto;
+        padding: 34px 28px
+      }
 
-/* ═══ SCROLLBAR ═══ */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--beige);border-radius:3px}
+      .login-form {
+        padding: 30px 24px
+      }
+    }
 
-/* ═══ RESPONSIVE ═══ */
-@media(max-width:900px){
-  .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .two-col{grid-template-columns:1fr}
-}
-@media(max-width:640px){
-  .sidebar{transform:translateX(-100%)}
-  .sidebar.open{transform:translateX(0)}
-  .main{margin-left:0}
-  .topbar{left:0}
-  .form-grid,.form-grid.col3{grid-template-columns:1fr}
-  .stat-grid{grid-template-columns:1fr 1fr}
-}
-</style>
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--green-dark);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform .3s ease
+    }
+
+    .sidebar-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1)
+    }
+
+    .sidebar-logo .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: #fff;
+      font-style: italic;
+      line-height: 1.3
+    }
+
+    .sidebar-logo .sub {
+      font-size: .65rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .4);
+      margin-top: 3px
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 0;
+      overflow-y: auto
+    }
+
+    .nav-section {
+      margin-bottom: 6px
+    }
+
+    .nav-section-label {
+      font-size: .6rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .3);
+      padding: 12px 24px 4px
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 24px;
+      font-size: .82rem;
+      color: rgba(255, 255, 255, .65);
+      cursor: pointer;
+      transition: all .2s;
+      border-left: 2px solid transparent;
+      font-weight: 400;
+      user-select: none
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, .06);
+      color: #fff
+    }
+
+    .nav-item.active {
+      background: rgba(255, 255, 255, .1);
+      color: #fff;
+      border-left-color: var(--gold-light)
+    }
+
+    .nav-item .ico {
+      width: 16px;
+      height: 16px;
+      opacity: .7;
+      flex-shrink: 0
+    }
+
+    .nav-item.active .ico {
+      opacity: 1
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--gold);
+      color: #fff;
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: .65rem;
+      font-weight: 600
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255, 255, 255, .1)
+    }
+
+    .sidebar-footer .admin-name {
+      font-size: .78rem;
+      color: rgba(255, 255, 255, .6)
+    }
+
+    .sidebar-footer .logout-btn {
+      font-size: .72rem;
+      color: rgba(255, 255, 255, .35);
+      cursor: pointer;
+      margin-top: 3px;
+      transition: color .2s
+    }
+
+    .sidebar-footer .logout-btn:hover {
+      color: rgba(255, 255, 255, .7)
+    }
+
+    /* TOPBAR */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-w);
+      right: 0;
+      height: 58px;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 90
+    }
+
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--text)
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .topbar-date {
+      font-size: .75rem;
+      color: var(--text-muted)
+    }
+
+    .topbar-icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--cream-dark);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color .2s;
+      position: relative
+    }
+
+    .topbar-icon-btn:hover {
+      border-color: var(--gold)
+    }
+
+    .notif-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      border: 2px solid var(--cream);
+      display: none
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: var(--sidebar-w);
+      margin-top: 58px;
+      flex: 1;
+      padding: 28px
+    }
+
+    .page {
+      display: none
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeIn .2s ease
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* STATS */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px
+    }
+
+    .stat-card {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      cursor: default
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .08)
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light))
+    }
+
+    .stat-card.green::before {
+      background: linear-gradient(90deg, #1e4d35, #2d7a52)
+    }
+
+    .stat-card.warn::before {
+      background: linear-gradient(90deg, #c0392b, #e74c3c)
+    }
+
+    .stat-card.blue::before {
+      background: linear-gradient(90deg, #2980b9, #3498db)
+    }
+
+    .stat-icon {
+      font-size: 1.4rem;
+      margin-bottom: 10px
+    }
+
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .stat-label {
+      font-size: .72rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: .08em
+    }
+
+    /* SECTION HEADER */
+    .sec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px
+    }
+
+    .sec-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem
+    }
+
+    .sec-sub {
+      font-size: .75rem;
+      color: var(--text-muted);
+      margin-top: 2px
+    }
+
+    /* SEARCH BAR */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      min-width: 220px;
+      transition: border-color .2s, box-shadow .2s
+    }
+
+    .search-bar:focus-within {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184, 150, 92, .1)
+    }
+
+    .search-bar svg {
+      opacity: .4;
+      flex-shrink: 0
+    }
+
+    .search-bar input {
+      border: none;
+      background: transparent;
+      font-size: .82rem;
+      color: var(--text);
+      font-family: 'Jost', sans-serif;
+      outline: none;
+      width: 100%
+    }
+
+    .search-bar input::placeholder {
+      color: var(--text-muted)
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: .8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .2s;
+      font-family: 'Jost', sans-serif
+    }
+
+    .btn-gold {
+      background: var(--green-dark);
+      color: #fff;
+      border-color: var(--green-dark)
+    }
+
+    .btn-gold:hover {
+      background: #163d29;
+      transform: translateY(-1px)
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border)
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold)
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border-color: var(--danger)
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #fff
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: .75rem
+    }
+
+    .btn-sms {
+      background: #0d7a4e;
+      color: #fff;
+      border-color: #0d7a4e
+    }
+
+    .btn-sms:hover {
+      background: #095e3a
+    }
+
+    .btn-wa {
+      background: #25d366;
+      color: #fff;
+      border-color: #25d366;
+      text-decoration: none
+    }
+
+    .btn-wa:hover {
+      background: #1ebe5d;
+      transform: translateY(-1px)
+    }
+
+    .btn-icon {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 6px
+    }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden
+    }
+
+    .table-scroll {
+      overflow-x: auto
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem
+    }
+
+    .data-table th {
+      background: var(--cream-dark);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: .68rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap
+    }
+
+    .data-table td {
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(224, 212, 200, .4);
+      vertical-align: middle
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .data-table tr:hover td {
+      background: rgba(248, 244, 238, .8)
+    }
+
+    .data-table tr.new-booking {
+      animation: newRow 2s ease
+    }
+
+    @keyframes newRow {
+
+      0%,
+      100% {
+        background: transparent
+      }
+
+      20%,
+      80% {
+        background: rgba(39, 174, 96, .08)
+      }
+    }
+
+    /* BADGES */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: .68rem;
+      font-weight: 500
+    }
+
+    .badge-pending {
+      background: #fef3cd;
+      color: #856404
+    }
+
+    .badge-confirmed {
+      background: #d4edda;
+      color: #155724
+    }
+
+    .badge-cancelled {
+      background: #f8d7da;
+      color: #721c24
+    }
+
+    .badge-completed {
+      background: #d1ecf1;
+      color: #0c5460
+    }
+
+    .badge-work {
+      background: #E6F1FB;
+      color: #185FA5
+    }
+
+    .badge-personal {
+      background: #EAF3DE;
+      color: #3B6D11
+    }
+
+    .badge-client {
+      background: #FAECE7;
+      color: #993C1D
+    }
+
+    .badge-wedding {
+      background: #fce4ec;
+      color: #880e4f
+    }
+
+    .badge-event {
+      background: #e8eaf6;
+      color: #283593
+    }
+
+    /* NEW BADGE */
+    .badge-new {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      color: #fff;
+      font-size: .6rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-left: 4px;
+      animation: pulse 2s infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .6
+      }
+    }
+
+    /* FORM */
+    .form-card {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px
+    }
+
+    .form-grid.col3 {
+      grid-template-columns: 1fr 1fr 1fr
+    }
+
+    .form-grid.full {
+      grid-template-columns: 1fr
+    }
+
+    .form-group label {
+      display: block;
+      font-size: .72rem;
+      color: var(--text-mid);
+      margin-bottom: 5px;
+      font-weight: 500
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .82rem;
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      transition: border-color .2s
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184, 150, 92, .08)
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border)
+    }
+
+    /* CALENDAR */
+    .cal-wrap {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px
+    }
+
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px
+    }
+
+    .cal-nav-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s;
+      font-size: 1.1rem;
+      color: var(--text-mid)
+    }
+
+    .cal-nav-btn:hover {
+      border-color: var(--gold)
+    }
+
+    .cal-month {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px
+    }
+
+    .cal-dow {
+      text-align: center;
+      font-size: .65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 6px 0
+    }
+
+    .cal-cell {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 5px 4px;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative
+    }
+
+    .cal-cell:hover {
+      background: var(--cream-dark);
+      border-color: var(--border)
+    }
+
+    .cal-cell.empty {
+      cursor: default
+    }
+
+    .cal-cell.today {
+      border-color: var(--gold) !important;
+      background: rgba(184, 150, 92, .07)
+    }
+
+    .cal-cell .cn {
+      font-size: .78rem;
+      font-weight: 500
+    }
+
+    .cal-cell .dots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      margin-top: 3px;
+      justify-content: center
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .dot-booking {
+      background: #b8965c
+    }
+
+    .dot-event {
+      background: #1e4d35
+    }
+
+    .dot-alert {
+      background: #c0392b
+    }
+
+    .cal-cell.has-alert {
+      border-left: 2px solid var(--danger)
+    }
+
+    .cal-detail {
+      background: var(--cream-dark);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 16px;
+      display: none
+    }
+
+    .cal-detail-title {
+      font-size: .85rem;
+      font-weight: 600;
+      margin-bottom: 10px
+    }
+
+    /* ALERT BANNER */
+    .alert-banner {
+      background: #fef3cd;
+      border: 1px solid #ffc107;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: .82rem;
+      color: #664d03;
+      display: none
+    }
+
+    .alert-banner.danger {
+      background: #f8d7da;
+      border-color: #f5c6cb;
+      color: #721c24
+    }
+
+    /* CONFIG WARNING */
+    .config-warn {
+      background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+      border: 1px solid #ffc107;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: .82rem
+    }
+
+    .config-warn h4 {
+      font-size: .85rem;
+      font-weight: 600;
+      color: #856404;
+      margin-bottom: 6px
+    }
+
+    /* SMS LOG */
+    .sms-log-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      font-size: .8rem;
+      background: var(--cream)
+    }
+
+    .sms-log-meta {
+      color: var(--text-muted);
+      font-size: .72rem;
+      margin-top: 3px
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 20, 10, .5);
+      backdrop-filter: blur(3px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center
+    }
+
+    .modal-overlay.open {
+      display: flex
+    }
+
+    .modal {
+      background: var(--cream);
+      border-radius: 14px;
+      padding: 28px;
+      width: 90%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+      animation: modalIn .25s ease
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(.96)translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)translateY(0)
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem
+    }
+
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: var(--text-muted);
+      transition: all .2s
+    }
+
+    .modal-close:hover {
+      background: var(--cream-dark);
+      color: var(--text)
+    }
+
+    /* BOOKING DETAIL */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      font-size: .82rem
+    }
+
+    .detail-field label {
+      font-size: .68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 3px;
+      display: block
+    }
+
+    .detail-field .val {
+      font-weight: 500;
+      color: var(--text)
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap
+    }
+
+    /* TOAST */
+    .toast-wrap {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .toast {
+      background: var(--green-dark);
+      color: #fff;
+      padding: 11px 18px;
+      border-radius: 9px;
+      font-size: .8rem;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+      animation: slideIn .3s ease;
+      min-width: 240px
+    }
+
+    .toast.error {
+      background: var(--danger)
+    }
+
+    .toast.warn {
+      background: var(--warn)
+    }
+
+    .toast.info {
+      background: #2980b9
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(120%);
+        opacity: 0
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1
+      }
+
+      to {
+        transform: translateX(120%);
+        opacity: 0
+      }
+    }
+
+    /* LOADING */
+    .loading {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* EMPTY */
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: .85rem
+    }
+
+    .empty-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      opacity: .4
+    }
+
+    /* TWO COL */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px
+    }
+
+    /* AUTO REFRESH INDICATOR */
+    .refresh-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .72rem;
+      color: var(--text-muted)
+    }
+
+    .refresh-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite
+    }
+
+    /* QUICK STATS ROW */
+    .quick-info {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px
+    }
+
+    .qi-chip {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: .75rem;
+      color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--beige);
+      border-radius: 3px
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:900px) {
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .two-col {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:640px) {
+      .sidebar {
+        transform: translateX(-100%)
+      }
+
+      .sidebar.open {
+        transform: translateX(0)
+      }
+
+      .main {
+        margin-left: 0
+      }
+
+      .topbar {
+        left: 0
+      }
+
+      .form-grid,
+      .form-grid.col3 {
+        grid-template-columns: 1fr
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      #mob-ham {
+        display: flex !important
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ═══ LOGIN ═══ -->
-<div class="login-page" id="page-login">
-  <div class="login-shell">
-    <section class="login-hero">
-      <div>
-        <div class="login-brand">Floral Roots &amp; Decors <span>Admin Panel</span></div>
-        <p>Manage bookings, events, and SMS reminders from one calm, polished workspace built for your studio team.</p>
-        <div class="login-badges">
-          <span class="login-badge">Bookings</span>
-          <span class="login-badge">Events</span>
-          <span class="login-badge">SMS Alerts</span>
-          <span class="login-badge">Supabase</span>
+  <!-- LOGIN -->
+  <div class="login-page" id="page-login">
+    <div class="login-shell">
+      <section class="login-hero">
+        <div>
+          <div class="login-brand">Floral Roots &amp; Decors <span>Admin Panel</span></div>
+          <p>Manage bookings, events, and SMS reminders from one calm workspace.</p>
+          <div class="login-badges">
+            <span class="login-badge">Bookings</span>
+            <span class="login-badge">Events</span>
+            <span class="login-badge">SMS Alerts</span>
+            <span class="login-badge">Live Sync</span>
+          </div>
         </div>
-      </div>
-      <div style="font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.42)">Secure access</div>
-    </section>
-    <section class="login-form">
-      <div>
-        <h1>Sign in</h1>
-        <div class="sub">Use your admin account or the local fallback password saved in settings.</div>
-      </div>
-      <div class="login-field">
-        <label for="login-email">Email</label>
-        <input id="login-email" type="email" placeholder="admin@floralrootsdecors.com.np" autocomplete="email"/>
-      </div>
-      <div class="login-field">
-        <label for="login-pass">Password</label>
-        <input id="login-pass" type="password" placeholder="Enter password" autocomplete="current-password"/>
-      </div>
-      <div id="login-err" class="login-error"></div>
-      <div class="login-actions">
-        <button class="btn btn-gold" id="login-btn" onclick="doLogin()">Sign In</button>
-        <div class="login-meta">Fallback password defaults to <strong>admin123</strong> until changed in Settings.</div>
-      </div>
-    </section>
-  </div>
-</div>
-
-<!-- ═══ SIDEBAR ═══ -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="brand">Floral Roots<br/>&amp; Decors</div>
-    <div class="sub">Admin Panel</div>
-  </div>
-  <nav class="sidebar-nav">
-    <div class="nav-section">
-      <div class="nav-section-label">Overview</div>
-      <div class="nav-item active" onclick="gotoPage('dashboard')">
-        <svg class="ico" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
-        Dashboard
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Bookings</div>
-      <div class="nav-item" onclick="gotoPage('bookings')">
-        <svg class="ico" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
-        All Bookings
-        <span class="nav-badge" id="badge-bookings">0</span>
-      </div>
-      <div class="nav-item" onclick="gotoPage('add-booking')">
-        <svg class="ico" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-        Add Booking
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Events</div>
-      <div class="nav-item" onclick="gotoPage('events')">
-        <svg class="ico" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
-        Event Schedule
-        <span class="nav-badge" id="badge-events">0</span>
-      </div>
-      <div class="nav-item" onclick="gotoPage('calendar')">
-        <svg class="ico" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
-        Calendar View
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Alerts</div>
-      <div class="nav-item" onclick="gotoPage('sms')">
-        <svg class="ico" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/></svg>
-        SMS Alerts
-        <span class="nav-badge" id="badge-sms" style="background:#c0392b;display:none">!</span>
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Settings</div>
-      <div class="nav-item" onclick="gotoPage('settings')">
-        <svg class="ico" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
-        Settings / API Keys
-      </div>
-    </div>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="admin-name" id="admin-display">Admin</div>
-    <div class="logout-btn" onclick="logout()">Sign out</div>
-  </div>
-</aside>
-
-<!-- ═══ TOPBAR ═══ -->
-<div class="topbar">
-  <div style="display:flex;align-items:center;gap:12px">
-    <button onclick="toggleSidebar()" style="display:none;border:none;background:transparent;cursor:pointer;padding:4px" id="mob-ham">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="var(--text)"><path d="M3 5h14M3 10h14M3 15h14" stroke="var(--text)" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </button>
-    <div class="topbar-title" id="page-title">Dashboard</div>
-  </div>
-  <div class="topbar-right">
-    <div class="topbar-date" id="topbar-date"></div>
-    <div class="notif-btn" onclick="gotoPage('sms')">
-      <svg width="16" height="16" viewBox="0 0 20 20" fill="var(--text-mid)"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z"/></svg>
-      <div class="notif-dot" id="notif-dot"></div>
+        <div style="font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.42)">Secure
+          access</div>
+      </section>
+      <section class="login-form">
+        <div>
+          <h1>Sign in</h1>
+          <div class="sub">Use your Supabase account or fallback password (admin123).</div>
+        </div>
+        <div class="login-field">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" placeholder="admin@floralrootsdecors.com.np" autocomplete="email" />
+        </div>
+        <div class="login-field">
+          <label for="login-pass">Password</label>
+          <input id="login-pass" type="password" placeholder="Enter password" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')doLogin()" />
+        </div>
+        <div id="login-err" class="login-error"></div>
+        <div class="login-actions">
+          <button class="btn btn-gold" id="login-btn" onclick="doLogin()">Sign In</button>
+          <div class="login-meta">Default password: <strong>admin123</strong></div>
+        </div>
+      </section>
     </div>
   </div>
-</div>
 
-<!-- ═══ MAIN ═══ -->
-<main class="main">
-
-
-  <!-- ════ DASHBOARD ════ -->
-  <div id="page-dashboard" class="page active">
-    <div id="alert-banner" class="alert-banner"></div>
-
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-icon">📋</div>
-        <div class="stat-num" id="d-total">0</div>
-        <div class="stat-label">Total Bookings</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-icon">✅</div>
-        <div class="stat-num" id="d-confirmed">0</div>
-        <div class="stat-label">Confirmed</div>
-      </div>
-      <div class="stat-card warn">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-num" id="d-pending">0</div>
-        <div class="stat-label">Pending</div>
-      </div>
-      <div class="stat-card blue">
-        <div class="stat-icon">📅</div>
-        <div class="stat-num" id="d-upcoming">0</div>
-        <div class="stat-label">This Month</div>
-      </div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">Floral Roots<br />&amp; Decors</div>
+      <div class="sub">Admin Panel</div>
     </div>
-
-    <div class="two-col">
-      <div>
-        <div class="sec-header">
-          <div><div class="sec-title">Recent Bookings</div><div class="sec-sub">Latest client bookings</div></div>
-          <button class="btn btn-outline btn-sm" onclick="gotoPage('bookings')">View all</button>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Client</th><th>Event</th><th>Date</th><th>Status</th><th></th></tr></thead>
-            <tbody id="dash-recent"></tbody>
-          </table>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <div class="nav-item active" onclick="gotoPage('dashboard')">
+          <svg class="ico" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+          </svg>
+          Dashboard
         </div>
       </div>
-      <div>
-        <div class="sec-header">
-          <div><div class="sec-title">Today's Alerts</div><div class="sec-sub">Events tomorrow</div></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Bookings</div>
+        <div class="nav-item" onclick="gotoPage('bookings')">
+          <svg class="ico" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+              clip-rule="evenodd" />
+          </svg>
+          All Bookings
+          <span class="nav-badge" id="badge-bookings">0</span>
         </div>
-        <div id="dash-alerts-list"></div>
+        <div class="nav-item" onclick="gotoPage('add-booking')">
+          <svg class="ico" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clip-rule="evenodd" />
+          </svg>
+          Add Booking
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Events</div>
+        <div class="nav-item" onclick="gotoPage('events')">
+          <svg class="ico" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+            <path fill-rule="evenodd"
+              d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+              clip-rule="evenodd" />
+          </svg>
+          Event Schedule
+          <span class="nav-badge" id="badge-events">0</span>
+        </div>
+        <div class="nav-item" onclick="gotoPage('calendar')">
+          <svg class="ico" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+              clip-rule="evenodd" />
+          </svg>
+          Calendar View
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Alerts</div>
+        <div class="nav-item" onclick="gotoPage('sms')">
+          <svg class="ico" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+            <path
+              d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+          </svg>
+          SMS Alerts
+          <span class="nav-badge" id="badge-sms" style="background:#c0392b;display:none">!</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Settings</div>
+        <div class="nav-item" onclick="gotoPage('settings')">
+          <svg class="ico" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+              clip-rule="evenodd" />
+          </svg>
+          Settings
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-name" id="admin-display">Admin</div>
+      <div class="logout-btn" onclick="logout()">Sign out</div>
+    </div>
+  </aside>
 
-        <div class="sec-header" style="margin-top:20px">
-          <div><div class="sec-title">Quick Add</div></div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn btn-gold" onclick="gotoPage('add-booking')" style="justify-content:center">+ New Booking</button>
-          <button class="btn btn-outline" onclick="gotoPage('events')" style="justify-content:center">+ Add Event</button>
-        </div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="toggleSidebar()"
+        style="display:none;border:none;background:transparent;cursor:pointer;padding:4px" id="mob-ham">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--text)" stroke-width="1.5"
+          stroke-linecap="round">
+          <path d="M3 5h14M3 10h14M3 15h14" />
+        </svg>
+      </button>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="refresh-indicator" id="refresh-indicator" style="display:none">
+        <div class="refresh-dot"></div>
+        <span>Live</span>
+      </div>
+      <div class="topbar-date" id="topbar-date"></div>
+      <div class="topbar-icon-btn" onclick="manualRefresh()" title="Refresh data">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-mid)" stroke-width="2">
+          <path d="M23 4v6h-6" />
+          <path d="M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+        </svg>
+      </div>
+      <div class="topbar-icon-btn" onclick="gotoPage('sms')" title="SMS Alerts" style="position:relative">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="var(--text-mid)">
+          <path
+            d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-2.83-2h5.66A3 3 0 0110 18z" />
+        </svg>
+        <div class="notif-dot" id="notif-dot"></div>
       </div>
     </div>
   </div>
 
-  <!-- ════ ALL BOOKINGS ════ -->
-  <div id="page-bookings" class="page">
-    <div class="sec-header">
-      <div><div class="sec-title">All Bookings</div><div class="sec-sub" id="booking-count-label">Loading...</div></div>
-      <div style="display:flex;gap:8px">
-        <select id="filter-status" class="btn btn-outline btn-sm" onchange="renderBookings()" style="padding:5px 10px;font-size:.75rem">
-          <option value="">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <button class="btn btn-gold btn-sm" onclick="gotoPage('add-booking')">+ New</button>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>Client</th><th>Phone</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="bookings-tbody"></tbody>
-      </table>
-    </div>
-  </div>
+  <!-- MAIN -->
+  <main class="main">
 
-  <!-- ════ ADD BOOKING ════ -->
-  <div id="page-add-booking" class="page">
-    <div class="sec-header">
-      <div><div class="sec-title" id="booking-form-title">New Booking</div><div class="sec-sub">Fill in client and event details</div></div>
-    </div>
-    <div class="form-card">
-      <input type="hidden" id="edit-booking-id"/>
-      <div style="font-size:.8rem;font-weight:600;color:var(--text-mid);margin-bottom:14px;text-transform:uppercase;letter-spacing:.08em">Client Details</div>
-      <div class="form-grid">
-        <div class="form-group"><label>Client Name *</label><input type="text" id="b-name" placeholder="Ramesh Shrestha"/></div>
-        <div class="form-group"><label>Phone Number *</label><input type="tel" id="b-phone" placeholder="98XXXXXXXX"/></div>
-      </div>
-      <div class="form-grid col3">
-        <div class="form-group"><label>Email</label><input type="email" id="b-email" placeholder="client@email.com"/></div>
-        <div class="form-group"><label>Address</label><input type="text" id="b-address" placeholder="Banepa, Kavre"/></div>
-        <div class="form-group"><label>Referred by</label><input type="text" id="b-ref" placeholder="Walk-in / Insta..."/></div>
-      </div>
-      <div style="font-size:.8rem;font-weight:600;color:var(--text-mid);margin:18px 0 14px;text-transform:uppercase;letter-spacing:.08em">Event Details</div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Event Type *</label>
-          <select id="b-type">
-            <option value="">Select...</option>
-            <option value="wedding">Wedding</option>
-            <option value="bridal">Bridal Reception</option>
-            <option value="engagement">Engagement</option>
-            <option value="birthday">Birthday</option>
-            <option value="anniversary">Anniversary</option>
-            <option value="corporate">Corporate Event</option>
-            <option value="other">Other</option>
-          </select>
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div id="alert-banner" class="alert-banner"></div>
+      <div class="stat-grid">
+        <div class="stat-card" onclick="gotoPage('bookings')" style="cursor:pointer">
+          <div class="stat-icon">📋</div>
+          <div class="stat-num" id="d-total">0</div>
+          <div class="stat-label">Total Bookings</div>
         </div>
-        <div class="form-group"><label>Event Date *</label><input type="date" id="b-date"/></div>
+        <div class="stat-card green" onclick="filterAndGoto('confirmed')" style="cursor:pointer">
+          <div class="stat-icon">✅</div>
+          <div class="stat-num" id="d-confirmed">0</div>
+          <div class="stat-label">Confirmed</div>
+        </div>
+        <div class="stat-card warn" onclick="filterAndGoto('pending')" style="cursor:pointer">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-num" id="d-pending">0</div>
+          <div class="stat-label">Pending Review</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon">📅</div>
+          <div class="stat-num" id="d-upcoming">0</div>
+          <div class="stat-label">This Month</div>
+        </div>
       </div>
-      <div class="form-grid col3">
-        <div class="form-group"><label>Venue</label><input type="text" id="b-venue" placeholder="Hall name / Location"/></div>
-        <div class="form-group"><label>Estimated Budget (Rs.)</label><input type="number" id="b-budget" placeholder="50000"/></div>
-        <div class="form-group">
-          <label>Status</label>
-          <select id="b-status">
+      <div class="two-col">
+        <div>
+          <div class="sec-header">
+            <div>
+              <div class="sec-title">Recent Bookings</div>
+              <div class="sec-sub">Latest from booking form</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="gotoPage('bookings')">View all →</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Event</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="sec-header">
+            <div>
+              <div class="sec-title">Today's Alerts</div>
+              <div class="sec-sub">Events happening tomorrow</div>
+            </div>
+          </div>
+          <div id="dash-alerts-list"></div>
+          <div class="sec-header" style="margin-top:20px">
+            <div>
+              <div class="sec-title">Quick Actions</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-gold" onclick="gotoPage('add-booking')" style="justify-content:center">+ New
+              Booking</button>
+            <button class="btn btn-outline" onclick="gotoPage('events')" style="justify-content:center">+ Add
+              Event</button>
+            <button class="btn btn-outline" onclick="gotoPage('calendar')" style="justify-content:center">📅 View
+              Calendar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL BOOKINGS -->
+    <div id="page-bookings" class="page">
+      <div class="sec-header">
+        <div>
+          <div class="sec-title">All Bookings</div>
+          <div class="sec-sub" id="booking-count-label">Loading...</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div class="search-bar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input id="booking-search" type="text" placeholder="Search client, phone, event…"
+              oninput="renderBookings()" />
+          </div>
+          <select id="filter-status" class="btn btn-outline btn-sm" onchange="renderBookings()"
+            style="padding:5px 10px;font-size:.75rem">
+            <option value="">All Status</option>
             <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
+          <button class="btn btn-gold btn-sm" onclick="gotoPage('add-booking')">+ New</button>
         </div>
       </div>
-      <div class="form-grid full">
-        <div class="form-group"><label>Services Required</label><input type="text" id="b-services" placeholder="e.g. Floral arch, Stage decor, Bridal car, Table centerpieces..."/></div>
+      <div class="table-wrap table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Phone</th>
+              <th>Event Type</th>
+              <th>Event Date</th>
+              <th>Budget</th>
+              <th>Received</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-tbody"></tbody>
+        </table>
       </div>
-      <div class="form-grid full">
-        <div class="form-group"><label>Notes / Special Requests</label><textarea id="b-notes" placeholder="Client's special requirements, color preferences, etc."></textarea></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
-        <input type="checkbox" id="b-alert" checked style="width:auto;cursor:pointer"/>
-        <label for="b-alert" style="font-size:.82rem;cursor:pointer">Send SMS reminder 1 day before event (to admin + client)</label>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-gold" onclick="saveBooking()">Save Booking</button>
-        <button class="btn btn-outline" onclick="gotoPage('bookings')">Cancel</button>
-        <span id="save-booking-msg" style="font-size:.78rem;color:var(--success);display:none;margin-left:8px">✓ Saved!</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ EVENTS ════ -->
-  <div id="page-events" class="page">
-    <div class="sec-header">
-      <div><div class="sec-title">Event Schedule</div><div class="sec-sub">Internal events and deadlines</div></div>
-      <button class="btn btn-gold btn-sm" onclick="openEventModal()">+ Add Event</button>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>Title</th><th>Category</th><th>Date</th><th>Time</th><th>Location</th><th>Alert</th><th>Actions</th></tr></thead>
-        <tbody id="events-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ════ CALENDAR ════ -->
-  <div id="page-calendar" class="page">
-    <div class="sec-header">
-      <div><div class="sec-title">Calendar View</div><div class="sec-sub">Bookings and events at a glance</div></div>
-    </div>
-    <div class="cal-wrap">
-      <div class="cal-header">
-        <button class="cal-nav-btn" onclick="calPrev()">&#8249;</button>
-        <div class="cal-month" id="cal-label"></div>
-        <button class="cal-nav-btn" onclick="calNext()">&#8250;</button>
-      </div>
-      <div class="cal-grid">
-        <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
-        <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
-        <div id="cal-cells" style="display:contents"></div>
-      </div>
-      <div id="cal-detail" class="cal-detail">
-        <div class="cal-detail-title" id="cal-detail-title"></div>
-        <div id="cal-detail-body"></div>
-      </div>
-    </div>
-    <div style="margin-top:14px;display:flex;gap:14px;font-size:.75rem;color:var(--text-muted)">
-      <span style="display:flex;align-items:center;gap:5px"><span class="dot dot-booking"></span>Booking</span>
-      <span style="display:flex;align-items:center;gap:5px"><span class="dot dot-event"></span>Event</span>
-      <span style="display:flex;align-items:center;gap:5px"><span class="dot dot-alert"></span>Alert day</span>
-    </div>
-  </div>
-
-  <!-- ════ SMS ALERTS ════ -->
-  <div id="page-sms" class="page">
-    <div class="sec-header">
-      <div><div class="sec-title">SMS Alerts</div><div class="sec-sub">Sparrow SMS integration — send reminders</div></div>
-      <button class="btn btn-sms btn-sm" onclick="sendAllPendingAlerts()">Send Today's Alerts</button>
     </div>
 
-    <div id="sms-api-warn" class="config-warn" style="display:none">
-      <h4>⚠️ Sparrow SMS API not configured</h4>
-      <p>Go to <strong>Settings → API Keys</strong> and enter your Sparrow SMS token to enable automatic SMS alerts.</p>
-    </div>
-
-    <div class="two-col">
-      <div>
-        <div style="font-size:.85rem;font-weight:600;margin-bottom:12px">Events needing reminder (tomorrow)</div>
-        <div id="sms-pending-list"></div>
-
-        <div style="font-size:.85rem;font-weight:600;margin-top:24px;margin-bottom:12px">Recent SMS Log</div>
-        <div id="sms-log-list"></div>
+    <!-- ADD BOOKING -->
+    <div id="page-add-booking" class="page">
+      <div class="sec-header">
+        <div>
+          <div class="sec-title" id="booking-form-title">New Booking</div>
+          <div class="sec-sub">Fill in client and event details</div>
+        </div>
       </div>
-      <div>
-        <div class="form-card">
-          <div style="font-size:.85rem;font-weight:600;margin-bottom:14px">Send Manual SMS</div>
-          <div class="form-group" style="margin-bottom:12px"><label>Phone Number</label><input type="tel" id="sms-phone" placeholder="977XXXXXXXXXX"/></div>
-          <div class="form-group" style="margin-bottom:14px"><label>Message</label><textarea id="sms-msg" placeholder="Your reminder message..." style="min-height:100px"></textarea></div>
-          <button class="btn btn-sms" onclick="sendManualSMS()" style="width:100%;justify-content:center">Send SMS</button>
+      <div class="form-card">
+        <input type="hidden" id="edit-booking-id" />
+        <div
+          style="font-size:.8rem;font-weight:600;color:var(--text-mid);margin-bottom:14px;text-transform:uppercase;letter-spacing:.08em">
+          Client Details</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Client Name *</label><input type="text" id="b-name"
+              placeholder="Ramesh Shrestha" /></div>
+          <div class="form-group"><label>Phone Number *</label><input type="tel" id="b-phone"
+              placeholder="98XXXXXXXX" /></div>
+        </div>
+        <div class="form-grid col3">
+          <div class="form-group"><label>Email</label><input type="email" id="b-email" placeholder="client@email.com" />
+          </div>
+          <div class="form-group"><label>Address</label><input type="text" id="b-address" placeholder="Banepa, Kavre" />
+          </div>
+          <div class="form-group"><label>Referred by</label><input type="text" id="b-ref"
+              placeholder="Walk-in / Instagram…" /></div>
+        </div>
+        <div
+          style="font-size:.8rem;font-weight:600;color:var(--text-mid);margin:18px 0 14px;text-transform:uppercase;letter-spacing:.08em">
+          Event Details</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Event Type *</label>
+            <select id="b-type">
+              <option value="">Select…</option>
+              <option value="Wedding">Wedding</option>
+              <option value="Bridal Reception">Bridal Reception</option>
+              <option value="Engagement">Engagement</option>
+              <option value="Birthday">Birthday</option>
+              <option value="Anniversary">Anniversary</option>
+              <option value="Bratabandha">Bratabandha</option>
+              <option value="Corporate Event">Corporate Event</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Event Date *</label><input type="date" id="b-date" /></div>
+        </div>
+        <div class="form-grid col3">
+          <div class="form-group"><label>Venue</label><input type="text" id="b-venue"
+              placeholder="Hall name / Location" /></div>
+          <div class="form-group"><label>Estimated Budget (Rs.)</label><input type="number" id="b-budget"
+              placeholder="50000" /></div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="b-status">
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid full">
+          <div class="form-group"><label>Services Required</label><input type="text" id="b-services"
+              placeholder="e.g. Floral arch, Stage decor, Bridal car, Table centerpieces…" /></div>
+        </div>
+        <div class="form-grid full">
+          <div class="form-group"><label>Notes / Special Requests</label><textarea id="b-notes"
+              placeholder="Client's special requirements, color preferences, etc."></textarea></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <input type="checkbox" id="b-alert" checked style="width:auto;cursor:pointer" />
+          <label for="b-alert" style="font-size:.82rem;cursor:pointer">Send SMS reminder 1 day before event</label>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-gold" onclick="saveBooking()">Save Booking</button>
+          <button class="btn btn-outline" onclick="gotoPage('bookings')">Cancel</button>
+          <span id="save-booking-msg" style="font-size:.78rem;color:var(--success);display:none;margin-left:8px">✓
+            Saved!</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ════ SETTINGS ════ -->
-  <div id="page-settings" class="page">
-    <div class="sec-header">
-      <div><div class="sec-title">Settings &amp; API Keys</div><div class="sec-sub">Configure your integrations</div></div>
-    </div>
-
-    <div class="config-warn">
-      <h4>📌 Setup Instructions</h4>
-      <p>Fill in the fields below and click Save. Your keys are stored securely in your browser's localStorage. You only need to do this once.</p>
-    </div>
-
-    <div class="form-card" style="margin-bottom:20px">
-      <div style="font-size:.88rem;font-weight:600;margin-bottom:16px;color:var(--green-dark)">🔵 Supabase Configuration</div>
-      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:16px">Get these from your Supabase project → Settings → API</p>
-      <div class="form-grid full">
-        <div class="form-group"><label>Supabase Project URL</label><input type="text" id="cfg-sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co"/></div>
+    <!-- EVENTS -->
+    <div id="page-events" class="page">
+      <div class="sec-header">
+        <div>
+          <div class="sec-title">Event Schedule</div>
+          <div class="sec-sub">Internal events and deadlines</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openEventModal()">+ Add Event</button>
       </div>
-      <div class="form-grid full">
-        <div class="form-group"><label>Supabase Anon Key</label><input type="text" id="cfg-sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."/></div>
-      </div>
-      <div style="margin-top:4px;font-size:.75rem;color:var(--text-muted)">
-        ℹ️ Supabase table needed: <code style="background:var(--cream-dark);padding:2px 6px;border-radius:4px">bookings</code> and <code style="background:var(--cream-dark);padding:2px 6px;border-radius:4px">events</code>
-      </div>
-    </div>
-
-    <div class="form-card" style="margin-bottom:20px">
-      <div style="font-size:.88rem;font-weight:600;margin-bottom:16px;color:#0d7a4e">📱 Sparrow SMS Configuration</div>
-      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:16px">Get your token from <a href="https://sparrowsms.com" target="_blank" style="color:var(--gold)">sparrowsms.com</a> → Dashboard → API Token</p>
-      <div class="form-grid col3">
-        <div class="form-group"><label>API Token</label><input type="text" id="cfg-sms-token" placeholder="v2_your_token_here"/></div>
-        <div class="form-group"><label>Sender Name (max 11 chars)</label><input type="text" id="cfg-sms-from" placeholder="FloralRoots" maxlength="11"/></div>
-        <div class="form-group"><label>Admin Phone (for alerts)</label><input type="tel" id="cfg-sms-admin" placeholder="977XXXXXXXXXX"/></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Location</th>
+              <th>Alert</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="events-tbody"></tbody>
+        </table>
       </div>
     </div>
 
-    <div class="form-card" style="margin-bottom:20px">
-      <div style="font-size:.88rem;font-weight:600;margin-bottom:16px">⚙️ Business Settings</div>
+    <!-- CALENDAR -->
+    <div id="page-calendar" class="page">
+      <div class="sec-header">
+        <div>
+          <div class="sec-title">Calendar View</div>
+          <div class="sec-sub">All bookings and events at a glance</div>
+        </div>
+      </div>
+      <div class="cal-wrap">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calPrev()">&#8249;</button>
+          <div class="cal-month" id="cal-label"></div>
+          <button class="cal-nav-btn" onclick="calNext()">&#8250;</button>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-dow">Sun</div>
+          <div class="cal-dow">Mon</div>
+          <div class="cal-dow">Tue</div>
+          <div class="cal-dow">Wed</div>
+          <div class="cal-dow">Thu</div>
+          <div class="cal-dow">Fri</div>
+          <div class="cal-dow">Sat</div>
+          <div id="cal-cells" style="display:contents"></div>
+        </div>
+        <div id="cal-detail" class="cal-detail">
+          <div class="cal-detail-title" id="cal-detail-title"></div>
+          <div id="cal-detail-body"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:14px;font-size:.75rem;color:var(--text-muted)">
+        <span style="display:flex;align-items:center;gap:5px"><span class="dot dot-booking"></span>Booking</span>
+        <span style="display:flex;align-items:center;gap:5px"><span class="dot dot-event"></span>Event</span>
+        <span style="display:flex;align-items:center;gap:5px"><span class="dot dot-alert"></span>Alert day</span>
+      </div>
+    </div>
+
+    <!-- SMS -->
+    <div id="page-sms" class="page">
+      <div class="sec-header">
+        <div>
+          <div class="sec-title">SMS Alerts</div>
+          <div class="sec-sub">Sparrow SMS — send reminders to clients</div>
+        </div>
+        <button class="btn btn-sms btn-sm" onclick="sendAllPendingAlerts()">Send Today's Alerts</button>
+      </div>
+      <div id="sms-api-warn" class="config-warn" style="display:none">
+        <h4>⚠️ Sparrow SMS not configured</h4>
+        <p>Go to <strong>Settings</strong> and enter your Sparrow SMS token to enable SMS alerts.</p>
+      </div>
+      <div class="two-col">
+        <div>
+          <div style="font-size:.85rem;font-weight:600;margin-bottom:12px">Events needing reminder (tomorrow)</div>
+          <div id="sms-pending-list"></div>
+          <div style="font-size:.85rem;font-weight:600;margin-top:24px;margin-bottom:12px">Recent SMS Log</div>
+          <div id="sms-log-list"></div>
+        </div>
+        <div>
+          <div class="form-card">
+            <div style="font-size:.85rem;font-weight:600;margin-bottom:14px">Send Manual SMS</div>
+            <div class="form-group" style="margin-bottom:12px"><label>Phone Number</label><input type="tel"
+                id="sms-phone" placeholder="977XXXXXXXXXX" /></div>
+            <div class="form-group" style="margin-bottom:14px"><label>Message</label><textarea id="sms-msg"
+                placeholder="Your reminder message…" style="min-height:100px"></textarea></div>
+            <button class="btn btn-sms" onclick="sendManualSMS()" style="width:100%;justify-content:center">Send
+              SMS</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <div class="sec-header">
+        <div>
+          <div class="sec-title">Settings &amp; API Keys</div>
+          <div class="sec-sub">Configure integrations</div>
+        </div>
+      </div>
+      <div class="form-card" style="margin-bottom:20px">
+        <div style="font-size:.88rem;font-weight:600;margin-bottom:16px;color:var(--green-dark)">🔵 Supabase
+          Configuration</div>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:16px">These are hardcoded. Change in the HTML
+          file directly.</p>
+        <div class="form-grid full">
+          <div class="form-group"><label>Supabase Project URL</label><input type="text" id="cfg-sb-url" readonly
+              style="background:var(--cream-dark);color:var(--text-muted)" /></div>
+        </div>
+      </div>
+      <div class="form-card" style="margin-bottom:20px">
+        <div style="font-size:.88rem;font-weight:600;margin-bottom:16px;color:#0d7a4e">📱 Sparrow SMS</div>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:16px">Get token from <a
+            href="https://sparrowsms.com" target="_blank" style="color:var(--gold)">sparrowsms.com</a></p>
+        <div class="form-grid col3">
+          <div class="form-group"><label>API Token</label><input type="text" id="cfg-sms-token"
+              placeholder="v2_your_token_here" /></div>
+          <div class="form-group"><label>Sender Name (max 11 chars)</label><input type="text" id="cfg-sms-from"
+              placeholder="FloralRoots" maxlength="11" /></div>
+          <div class="form-group"><label>Admin Phone (for alerts)</label><input type="tel" id="cfg-sms-admin"
+              placeholder="977XXXXXXXXXX" /></div>
+        </div>
+      </div>
+      <div class="form-card" style="margin-bottom:20px">
+        <div style="font-size:.88rem;font-weight:600;margin-bottom:16px">⚙️ Business Settings</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Business Name</label><input type="text" id="cfg-biz-name"
+              placeholder="Floral Roots & Decors" /></div>
+          <div class="form-group"><label>Admin Name</label><input type="text" id="cfg-admin-name"
+              placeholder="Nishan Khadka" /></div>
+        </div>
+        <div class="form-grid full">
+          <div class="form-group"><label>Admin Password (for fallback login)</label><input type="password"
+              id="cfg-admin-pass" placeholder="Leave blank to keep current" /></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
+        <button class="btn btn-outline" onclick="testSMS()">Test SMS</button>
+        <span id="settings-saved-msg" style="font-size:.78rem;color:var(--success);display:none;align-self:center">✓
+          Saved!</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- EVENT MODAL -->
+  <div class="modal-overlay" id="event-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="event-modal-title">Add Event</div>
+        <button class="modal-close" onclick="closeEventModal()">✕</button>
+      </div>
+      <input type="hidden" id="edit-event-id" />
       <div class="form-grid">
-        <div class="form-group"><label>Business Name</label><input type="text" id="cfg-biz-name" placeholder="Floral Roots & Decors"/></div>
-        <div class="form-group"><label>Admin Name</label><input type="text" id="cfg-admin-name" placeholder="Nishan Khadka"/></div>
+        <div class="form-group"><label>Title *</label><input type="text" id="em-title" placeholder="Event title" />
+        </div>
+        <div class="form-group"><label>Category</label><select id="em-cat">
+            <option value="work">Work</option>
+            <option value="client">Client</option>
+            <option value="personal">Personal</option>
+          </select></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Date *</label><input type="date" id="em-date" /></div>
+        <div class="form-group"><label>Time</label><input type="time" id="em-time" /></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Location</label><input type="text" id="em-loc" placeholder="Office / venue…" />
+        </div>
+        <div class="form-group"><label>Client Name</label><input type="text" id="em-client" placeholder="Optional" />
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label>Notes</label><textarea id="em-notes"
+          placeholder="Details…"></textarea></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <input type="checkbox" id="em-alert" checked style="width:auto" />
+        <label for="em-alert" style="font-size:.82rem">Send SMS alert 1 day before</label>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold" onclick="saveEvent()">Save Event</button>
+        <button class="btn btn-outline" onclick="closeEventModal()">Cancel</button>
       </div>
     </div>
-
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-gold" onclick="saveSettings()">Save All Settings</button>
-      <button class="btn btn-outline" onclick="testSMS()">Test SMS</button>
-      <span id="settings-saved-msg" style="font-size:.78rem;color:var(--success);display:none;align-self:center">✓ Saved!</span>
-    </div>
-
-    <div class="form-card" style="margin-top:24px">
-      <div style="font-size:.88rem;font-weight:600;margin-bottom:14px;color:#721c24">🗄️ Database Setup (Supabase SQL)</div>
-      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:12px">Run this SQL in your Supabase SQL Editor to create the required tables:</p>
-      <pre id="sql-copy" style="background:var(--cream-dark);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.72rem;overflow-x:auto;line-height:1.6;color:var(--text-mid)">-- Run this in Supabase SQL Editor
-
-create table if not exists bookings (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamp with time zone default now(),
-  client_name text not null,
-  phone text,
-  email text,
-  address text,
-  referred_by text,
-  event_type text,
-  event_date date,
-  venue text,
-  budget numeric,
-  services text,
-  notes text,
-  status text default 'pending',
-  sms_alert boolean default true,
-  sms_sent boolean default false
-);
-
-create table if not exists events (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamp with time zone default now(),
-  title text not null,
-  category text default 'work',
-  event_date date,
-  event_time text,
-  location text,
-  client_name text,
-  notes text,
-  sms_alert boolean default true,
-  sms_sent boolean default false
-);
-
-create table if not exists sms_log (
-  id uuid primary key default gen_random_uuid(),
-  sent_at timestamp with time zone default now(),
-  phone text,
-  message text,
-  status text,
-  reference_id text
-);</pre>
-      <button class="btn btn-outline btn-sm" onclick="copySQL()" style="margin-top:10px">Copy SQL</button>
-    </div>
   </div>
 
-</main>
-
-<!-- ═══ EVENT MODAL ═══ -->
-<div class="modal-overlay" id="event-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="event-modal-title">Add Event</div>
-      <button class="modal-close" onclick="closeEventModal()">✕</button>
-    </div>
-    <input type="hidden" id="edit-event-id"/>
-    <div class="form-grid">
-      <div class="form-group"><label>Title *</label><input type="text" id="em-title" placeholder="Event title"/></div>
-      <div class="form-group">
-        <label>Category</label>
-        <select id="em-cat">
-          <option value="work">Work</option>
-          <option value="client">Client</option>
-          <option value="personal">Personal</option>
-        </select>
+  <!-- BOOKING DETAIL MODAL -->
+  <div class="modal-overlay" id="booking-modal">
+    <div class="modal" style="max-width:600px">
+      <div class="modal-header">
+        <div class="modal-title">Booking Details</div>
+        <button class="modal-close" onclick="closeBookingModal()">✕</button>
       </div>
-    </div>
-    <div class="form-grid">
-      <div class="form-group"><label>Date *</label><input type="date" id="em-date"/></div>
-      <div class="form-group"><label>Time</label><input type="time" id="em-time"/></div>
-    </div>
-    <div class="form-grid">
-      <div class="form-group"><label>Location</label><input type="text" id="em-loc" placeholder="Office / venue..."/></div>
-      <div class="form-group"><label>Client Name</label><input type="text" id="em-client" placeholder="Optional"/></div>
-    </div>
-    <div class="form-group" style="margin-bottom:14px"><label>Notes</label><textarea id="em-notes" placeholder="Details..."></textarea></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <input type="checkbox" id="em-alert" checked style="width:auto"/>
-      <label for="em-alert" style="font-size:.82rem">Send SMS alert 1 day before</label>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-gold" onclick="saveEvent()">Save Event</button>
-      <button class="btn btn-outline" onclick="closeEventModal()">Cancel</button>
+      <div id="booking-detail-body"></div>
     </div>
   </div>
-</div>
 
-<!-- ═══ BOOKING DETAIL MODAL ═══ -->
-<div class="modal-overlay" id="booking-modal">
-  <div class="modal" style="max-width:600px">
-    <div class="modal-header">
-      <div class="modal-title">Booking Details</div>
-      <button class="modal-close" onclick="closeBookingModal()">✕</button>
-    </div>
-    <div id="booking-detail-body"></div>
-  </div>
-</div>
+  <!-- TOAST -->
+  <div class="toast-wrap" id="toast-wrap"></div>
 
-<!-- ═══ TOAST ═══ -->
-<div class="toast-wrap" id="toast-wrap"></div>
+  <script>
+    const SUPABASE_URL = 'https://jyadvumukpmivghattyg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5YWR2dW11a3BtaXZnaGF0dHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NDMzNjMsImV4cCI6MjA5NjExOTM2M30.zF39hv1mgBBK0NTBau8pZgtqHAscLtj7g25Ru-pGw8U';
 
-<script>
-// ═══════════════════════════════════════════
-// CONFIG — keys stored in localStorage
-// ═══════════════════════════════════════════
-const CFG = {
-  get sbUrl()    { return localStorage.getItem('cfg_sb_url') || '' },
-  get sbKey()    { return localStorage.getItem('cfg_sb_anon') || '' },
-  get smsToken() { return localStorage.getItem('cfg_sms_token') || '' },
-  get smsFrom()  { return localStorage.getItem('cfg_sms_from') || 'FloralRoots' },
-  get adminPhone(){ return localStorage.getItem('cfg_sms_admin') || '' },
-  get bizName()  { return localStorage.getItem('cfg_biz_name') || 'Floral Roots & Decors' },
-  get adminName(){ return localStorage.getItem('cfg_admin_name') || 'Admin' },
-};
+    const CFG = {
+      get sbUrl() { return SUPABASE_URL },
+      get sbKey() { return SUPABASE_ANON_KEY },
+      get smsToken() { return localStorage.getItem('cfg_sms_token') || '' },
+      get smsFrom() { return localStorage.getItem('cfg_sms_from') || 'FloralRoots' },
+      get adminPhone() { return localStorage.getItem('cfg_sms_admin') || '' },
+      get bizName() { return localStorage.getItem('cfg_biz_name') || 'Floral Roots & Decors' },
+      get adminName() { return localStorage.getItem('cfg_admin_name') || 'Admin' },
+    };
 
-// ═══ SUPABASE CLIENT (lazy init) ═══
-let _sb = null;
-function getSupabase(){
-  if(_sb) return _sb;
-  if(!CFG.sbUrl || !CFG.sbKey) return null;
-  _sb = supabase.createClient(CFG.sbUrl, CFG.sbKey);
-  return _sb;
-}
+    let _sb = null;
+    function getSupabase() {
+      if (_sb) return _sb;
+      _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      return _sb;
+    }
 
-// ═══ LOCAL FALLBACK STORAGE ═══
-let localBookings = JSON.parse(localStorage.getItem('fl_bookings')||'[]');
-let localEvents   = JSON.parse(localStorage.getItem('fl_events')||'[]');
-let smsLog        = JSON.parse(localStorage.getItem('fl_sms_log')||'[]');
+    let localBookings = JSON.parse(localStorage.getItem('fl_bookings') || '[]');
+    let localEvents = JSON.parse(localStorage.getItem('fl_events') || '[]');
+    let smsLog = JSON.parse(localStorage.getItem('fl_sms_log') || '[]');
+    let lastBookingCount = 0;
+    let autoRefreshTimer = null;
 
-function saveLocal(){
-  localStorage.setItem('fl_bookings', JSON.stringify(localBookings));
-  localStorage.setItem('fl_events', JSON.stringify(localEvents));
-  localStorage.setItem('fl_sms_log', JSON.stringify(smsLog));
-}
+    function saveLocal() {
+      localStorage.setItem('fl_bookings', JSON.stringify(localBookings));
+      localStorage.setItem('fl_events', JSON.stringify(localEvents));
+      localStorage.setItem('fl_sms_log', JSON.stringify(smsLog));
+    }
 
-// ═══ DATE HELPERS ═══
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-function pad(n){return String(n).padStart(2,'0')}
-const now = new Date();
-const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-function tomorrowStr(){const t=new Date(now);t.setDate(t.getDate()+1);return`${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`}
-function fmtDate(ds){if(!ds)return'–';const d=new Date(ds+'T12:00:00');return`${MONTHS[d.getMonth()].slice(0,3)} ${d.getDate()}, ${d.getFullYear()}`}
-function fmtMoney(n){if(!n)return'–';return'Rs. '+Number(n).toLocaleString('en-IN')}
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    function pad(n) { return String(n).padStart(2, '0') }
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    function tomorrowStr() { const t = new Date(); t.setDate(t.getDate() + 1); return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}` }
+    function fmtDate(ds) { if (!ds) return '–'; const d = new Date(ds + 'T12:00:00'); return `${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}` }
+    function fmtDateTime(ds) { if (!ds) return '–'; const d = new Date(ds); return d.toLocaleDateString('en-NP', { month: 'short', day: 'numeric' }) }
+    function fmtMoney(n) { if (!n) return '–'; return 'Rs. ' + Number(n).toLocaleString('en-IN') }
+    function waLink(phone, name, eventType, date) {
+      const msg = encodeURIComponent(`Hello ${name}, this is Floral Roots & Decors. We wanted to confirm your ${eventType} booking on ${date}. Please let us know if you have any questions!`);
+      const p = phone.replace(/\D/g, '');
+      const num = p.startsWith('977') ? p : '977' + p;
+      return `https://wa.me/${num}?text=${msg}`;
+    }
 
-// ═══ TOAST ═══
-function toast(msg,type='success'){
-  const w=document.getElementById('toast-wrap');
-  const t=document.createElement('div');
-  t.className=`toast${type==='error'?' error':type==='warn'?' warn':''}`;
-  t.innerHTML=`<span>${type==='success'?'✓':type==='error'?'✕':'⚠'}</span>${msg}`;
-  w.appendChild(t);
-  setTimeout(()=>{t.style.animation='slideOut .3s ease forwards';setTimeout(()=>t.remove(),300)},3200);
-}
+    // TOAST
+    function toast(msg, type = 'success') {
+      const w = document.getElementById('toast-wrap');
+      const t = document.createElement('div');
+      t.className = `toast${type === 'error' ? ' error' : type === 'warn' ? ' warn' : type === 'info' ? ' info' : ''}`;
+      t.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'info' ? 'ℹ' : '⚠'}</span>${msg}`;
+      w.appendChild(t);
+      setTimeout(() => { t.style.animation = 'slideOut .3s ease forwards'; setTimeout(() => t.remove(), 300) }, 3200);
+    }
 
-// ═══ NAV ═══
-const PAGE_TITLES = {
-  dashboard:'Dashboard',bookings:'All Bookings','add-booking':'New Booking',
-  events:'Event Schedule',calendar:'Calendar',sms:'SMS Alerts',settings:'Settings'
-};
-function gotoPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const pg=document.getElementById('page-'+id);
-  if(pg) pg.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>{
-    if(n.getAttribute('onclick')===`gotoPage('${id}')`) n.classList.add('active');
-  });
-  document.getElementById('page-title').textContent = PAGE_TITLES[id]||id;
-  if(id==='dashboard') refreshDashboard();
-  if(id==='bookings')  renderBookings();
-  if(id==='events')    renderEvents();
-  if(id==='calendar')  renderCal();
-  if(id==='sms')       renderSMS();
-  if(id==='settings')  loadSettings();
-  if(id==='add-booking') resetBookingForm();
-}
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-}
+    // NAV
+    const PAGE_TITLES = { dashboard: 'Dashboard', bookings: 'All Bookings', 'add-booking': 'New Booking', events: 'Event Schedule', calendar: 'Calendar', sms: 'SMS Alerts', settings: 'Settings' };
+    function gotoPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const pg = document.getElementById('page-' + id);
+      if (pg) pg.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => { if (n.getAttribute('onclick') === `gotoPage('${id}')`) n.classList.add('active'); });
+      document.getElementById('page-title').textContent = PAGE_TITLES[id] || id;
+      if (id === 'dashboard') refreshDashboard();
+      if (id === 'bookings') renderBookings();
+      if (id === 'events') renderEvents();
+      if (id === 'calendar') renderCal();
+      if (id === 'sms') renderSMS();
+      if (id === 'settings') loadSettings();
+      if (id === 'add-booking') resetBookingForm();
+      if (window.innerWidth <= 640) document.getElementById('sidebar').classList.remove('open');
+    }
+    function filterAndGoto(status) {
+      document.getElementById('filter-status').value = status;
+      gotoPage('bookings');
+    }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+    function manualRefresh() { const cur = document.querySelector('.page.active')?.id?.replace('page-', ''); if (cur) gotoPage(cur); toast('Refreshed', 'info'); }
 
-// ═══ AUTH ═══
-function checkAuth(){
-  const logged = sessionStorage.getItem('fl_auth');
-  const loginPage = document.getElementById('page-login');
-  const main = document.querySelector('.main');
-  if(!logged){
-    loginPage.style.display='flex';
-    document.querySelector('.sidebar').style.display='none';
-    document.querySelector('.topbar').style.display='none';
-    if(main) main.style.display='none';
-  } else {
-    loginPage.style.display='none';
-    document.querySelector('.sidebar').style.display='flex';
-    document.querySelector('.topbar').style.display='flex';
-    if(main) main.style.display='block';
-    document.getElementById('admin-display').textContent = CFG.adminName || 'Admin';
-  }
-}
-function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const pass =document.getElementById('login-pass').value;
-  const btn  =document.getElementById('login-btn');
-  const err  =document.getElementById('login-err');
-  err.style.display='none';
+    // AUTO REFRESH every 30s
+    function startAutoRefresh() {
+      document.getElementById('refresh-indicator').style.display = 'flex';
+      autoRefreshTimer = setInterval(async () => {
+        const bookings = await dbGetBookings();
+        if (bookings.length > lastBookingCount && lastBookingCount > 0) {
+          const diff = bookings.length - lastBookingCount;
+          toast(`${diff} new booking${diff > 1 ? 's' : ''} received! 🌸`);
+          document.getElementById('notif-dot').style.display = 'block';
+          const cur = document.querySelector('.page.active')?.id?.replace('page-', '');
+          if (cur === 'dashboard') refreshDashboard();
+          if (cur === 'bookings') renderBookings();
+        }
+        lastBookingCount = bookings.length;
+      }, 30000);
+    }
 
-  // ── Try Supabase auth if configured ──
-  const sb = getSupabase();
-  if(sb){
-    btn.innerHTML='<span class="loading"></span> Signing in...';
-    btn.disabled=true;
-    sb.auth.signInWithPassword({email,password:pass}).then(({data,error})=>{
-      if(error){
-        err.textContent=error.message;err.style.display='block';
-        btn.innerHTML='Sign In';btn.disabled=false;
+    // AUTH
+    function checkAuth() {
+      const logged = sessionStorage.getItem('fl_auth');
+      const loginPage = document.getElementById('page-login');
+      const main = document.querySelector('.main');
+      if (!logged) {
+        loginPage.style.display = 'flex';
+        document.querySelector('.sidebar').style.display = 'none';
+        document.querySelector('.topbar').style.display = 'none';
+        if (main) main.style.display = 'none';
       } else {
-        sessionStorage.setItem('fl_auth','1');
-        checkAuth();refreshDashboard();
+        loginPage.style.display = 'none';
+        document.querySelector('.sidebar').style.display = 'flex';
+        document.querySelector('.topbar').style.display = 'flex';
+        if (main) main.style.display = 'block';
+        document.getElementById('admin-display').textContent = CFG.adminName || 'Admin';
+        startAutoRefresh();
       }
-    });
-    return;
-  }
-
-  // ── Fallback: simple password (set in settings) ──
-  const savedPass = localStorage.getItem('cfg_admin_pass') || 'admin123';
-  if(pass===savedPass){
-    sessionStorage.setItem('fl_auth','1');
-    checkAuth();refreshDashboard();
-  } else {
-    err.textContent='Incorrect password.';err.style.display='block';
-  }
-}
-function logout(){
-  sessionStorage.removeItem('fl_auth');
-  const sb=getSupabase();
-  if(sb) sb.auth.signOut();
-  checkAuth();
-}
-
-// ═══ DATA LAYER (Supabase or localStorage fallback) ═══
-async function dbGetBookings(){
-  const sb=getSupabase();
-  if(sb){
-    const {data,error}=await sb.from('bookings').select('*').order('event_date',{ascending:true});
-    if(!error&&data){ localBookings=data; saveLocal(); return data; }
-  }
-  return localBookings;
-}
-async function dbSaveBooking(b){
-  const sb=getSupabase();
-  if(sb){
-    if(b.id && b.id.length>8){
-      const {data,error}=await sb.from('bookings').update(b).eq('id',b.id).select();
-      if(!error&&data){ 
-        const idx=localBookings.findIndex(x=>x.id===b.id);
-        if(idx>=0) localBookings[idx]=data[0]; else localBookings.push(data[0]);
-        saveLocal();return data[0];
-      }
-    } else {
-      delete b.id;
-      const {data,error}=await sb.from('bookings').insert(b).select();
-      if(!error&&data){ localBookings.push(data[0]);saveLocal();return data[0]; }
     }
-  }
-  // local fallback
-  if(!b.id || b.id.length<=8) b.id=Date.now().toString();
-  const idx=localBookings.findIndex(x=>x.id===b.id);
-  if(idx>=0) localBookings[idx]=b; else localBookings.push(b);
-  saveLocal();return b;
-}
-async function dbDeleteBooking(id){
-  const sb=getSupabase();
-  if(sb){ await sb.from('bookings').delete().eq('id',id); }
-  localBookings=localBookings.filter(b=>b.id!==id);saveLocal();
-}
-async function dbGetEvents(){
-  const sb=getSupabase();
-  if(sb){
-    const {data,error}=await sb.from('events').select('*').order('event_date',{ascending:true});
-    if(!error&&data){ localEvents=data;saveLocal();return data; }
-  }
-  return localEvents;
-}
-async function dbSaveEvent(e){
-  const sb=getSupabase();
-  if(sb){
-    if(e.id && e.id.length>8){
-      const {data,error}=await sb.from('events').update(e).eq('id',e.id).select();
-      if(!error&&data){
-        const idx=localEvents.findIndex(x=>x.id===e.id);
-        if(idx>=0) localEvents[idx]=data[0]; else localEvents.push(data[0]);
-        saveLocal();return data[0];
+    function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('login-err');
+      err.style.display = 'none';
+      const sb = getSupabase();
+      if (sb && email) {
+        btn.innerHTML = '<span class="loading"></span> Signing in…';
+        btn.disabled = true;
+        sb.auth.signInWithPassword({ email, password: pass }).then(({ data, error }) => {
+          if (error) { err.textContent = error.message; err.style.display = 'block'; btn.innerHTML = 'Sign In'; btn.disabled = false; }
+          else { sessionStorage.setItem('fl_auth', '1'); checkAuth(); refreshDashboard(); }
+        });
+        return;
       }
-    } else {
-      delete e.id;
-      const {data,error}=await sb.from('events').insert(e).select();
-      if(!error&&data){ localEvents.push(data[0]);saveLocal();return data[0]; }
+      const savedPass = localStorage.getItem('cfg_admin_pass') || 'admin123';
+      if (pass === savedPass) { sessionStorage.setItem('fl_auth', '1'); checkAuth(); refreshDashboard(); }
+      else { err.textContent = 'Incorrect password.'; err.style.display = 'block'; }
     }
-  }
-  if(!e.id||e.id.length<=8) e.id=Date.now().toString();
-  const idx=localEvents.findIndex(x=>x.id===e.id);
-  if(idx>=0) localEvents[idx]=e; else localEvents.push(e);
-  saveLocal();return e;
-}
-async function dbDeleteEvent(id){
-  const sb=getSupabase();
-  if(sb){ await sb.from('events').delete().eq('id',id); }
-  localEvents=localEvents.filter(e=>e.id!==id);saveLocal();
-}
-async function dbSaveSmsLog(entry){
-  const sb=getSupabase();
-  if(sb){
-    await sb.from('sms_log').insert(entry);
-  }
-  smsLog.unshift(entry);if(smsLog.length>100)smsLog=smsLog.slice(0,100);
-  saveLocal();
-}
+    function logout() { sessionStorage.removeItem('fl_auth'); if (autoRefreshTimer) clearInterval(autoRefreshTimer); const sb = getSupabase(); if (sb) sb.auth.signOut(); checkAuth(); }
 
-// ═══ DASHBOARD ═══
-async function refreshDashboard(){
-  const bookings = await dbGetBookings();
-  const events   = await dbGetEvents();
-  const tmr = tomorrowStr();
+    // DATA LAYER
+    async function dbGetBookings() {
+      const sb = getSupabase();
+      if (sb) {
+        const { data, error } = await sb.from('bookings').select('*').order('created_at', { ascending: false });
+        if (!error && data) { localBookings = data; saveLocal(); return data; }
+      }
+      return localBookings;
+    }
+    async function dbSaveBooking(b) {
+      const sb = getSupabase();
+      if (sb) {
+        if (b.id && b.id.length > 8) {
+          const { data, error } = await sb.from('bookings').update(b).eq('id', b.id).select();
+          if (!error && data) { const idx = localBookings.findIndex(x => x.id === b.id); if (idx >= 0) localBookings[idx] = data[0]; else localBookings.push(data[0]); saveLocal(); return data[0]; }
+        } else {
+          delete b.id;
+          const { data, error } = await sb.from('bookings').insert(b).select();
+          if (!error && data) { localBookings.unshift(data[0]); saveLocal(); return data[0]; }
+        }
+      }
+      if (!b.id || b.id.length <= 8) b.id = Date.now().toString();
+      const idx = localBookings.findIndex(x => x.id === b.id);
+      if (idx >= 0) localBookings[idx] = b; else localBookings.unshift(b);
+      saveLocal(); return b;
+    }
+    async function dbDeleteBooking(id) {
+      const sb = getSupabase();
+      if (sb) { await sb.from('bookings').delete().eq('id', id); }
+      localBookings = localBookings.filter(b => b.id !== id); saveLocal();
+    }
+    async function dbGetEvents() {
+      const sb = getSupabase();
+      if (sb) {
+        const { data, error } = await sb.from('events').select('*').order('event_date', { ascending: true });
+        if (!error && data) { localEvents = data; saveLocal(); return data; }
+      }
+      return localEvents;
+    }
+    async function dbSaveEvent(e) {
+      const sb = getSupabase();
+      if (sb) {
+        if (e.id && e.id.length > 8) {
+          const { data, error } = await sb.from('events').update(e).eq('id', e.id).select();
+          if (!error && data) { const idx = localEvents.findIndex(x => x.id === e.id); if (idx >= 0) localEvents[idx] = data[0]; else localEvents.push(data[0]); saveLocal(); return data[0]; }
+        } else {
+          delete e.id;
+          const { data, error } = await sb.from('events').insert(e).select();
+          if (!error && data) { localEvents.push(data[0]); saveLocal(); return data[0]; }
+        }
+      }
+      if (!e.id || e.id.length <= 8) e.id = Date.now().toString();
+      const idx = localEvents.findIndex(x => x.id === e.id);
+      if (idx >= 0) localEvents[idx] = e; else localEvents.push(e);
+      saveLocal(); return e;
+    }
+    async function dbDeleteEvent(id) {
+      const sb = getSupabase();
+      if (sb) { await sb.from('events').delete().eq('id', id); }
+      localEvents = localEvents.filter(e => e.id !== id); saveLocal();
+    }
+    async function dbSaveSmsLog(entry) {
+      const sb = getSupabase();
+      if (sb) { await sb.from('sms_log').insert(entry); }
+      smsLog.unshift(entry); if (smsLog.length > 100) smsLog = smsLog.slice(0, 100);
+      saveLocal();
+    }
 
-  document.getElementById('d-total').textContent=bookings.length;
-  document.getElementById('d-confirmed').textContent=bookings.filter(b=>b.status==='confirmed').length;
-  document.getElementById('d-pending').textContent=bookings.filter(b=>b.status==='pending').length;
-  const thisMonth=now.getMonth();const thisYear=now.getFullYear();
-  document.getElementById('d-upcoming').textContent=bookings.filter(b=>{
-    if(!b.event_date)return false;
-    const d=new Date(b.event_date);return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;
-  }).length;
+    // DASHBOARD
+    async function refreshDashboard() {
+      const bookings = await dbGetBookings();
+      const events = await dbGetEvents();
+      lastBookingCount = bookings.length;
+      const tmr = tomorrowStr();
 
-  // Recent bookings
-  const recent=[...bookings].sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||'')).slice(0,6);
-  const tbody=document.getElementById('dash-recent');
-  if(!recent.length){
-    tbody.innerHTML='<tr><td colspan="5"><div class="empty">No bookings yet</div></td></tr>';
-  } else {
-    tbody.innerHTML=recent.map(b=>`<tr>
-      <td><strong>${b.client_name||'–'}</strong></td>
-      <td>${b.event_type||'–'}</td>
+      document.getElementById('d-total').textContent = bookings.length;
+      document.getElementById('d-confirmed').textContent = bookings.filter(b => b.status === 'confirmed').length;
+      document.getElementById('d-pending').textContent = bookings.filter(b => b.status === 'pending').length;
+      const thisMonth = now.getMonth(), thisYear = now.getFullYear();
+      document.getElementById('d-upcoming').textContent = bookings.filter(b => { if (!b.event_date) return false; const d = new Date(b.event_date); return d.getMonth() === thisMonth && d.getFullYear() === thisYear; }).length;
+
+      const recent = bookings.slice(0, 6);
+      const tbody = document.getElementById('dash-recent');
+      if (!recent.length) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No bookings yet</div></td></tr>';
+      } else {
+        tbody.innerHTML = recent.map(b => `<tr>
+      <td><strong>${b.client_name || '–'}</strong></td>
+      <td>${b.event_type || '–'}</td>
       <td>${fmtDate(b.event_date)}</td>
-      <td><span class="badge badge-${b.status||'pending'}">${b.status||'pending'}</span></td>
+      <td><span class="badge badge-${b.status || 'pending'}">${b.status || 'pending'}</span></td>
       <td><button class="btn btn-outline btn-sm" onclick="viewBooking('${b.id}')">View</button></td>
     </tr>`).join('');
-  }
+      }
 
-  // Today's alerts
-  const alertList=document.getElementById('dash-alerts-list');
-  const alertEvs=[
-    ...bookings.filter(b=>b.event_date===tmr&&b.sms_alert),
-    ...events.filter(e=>e.event_date===tmr&&e.sms_alert)
-  ];
-  if(!alertEvs.length){
-    alertList.innerHTML='<div style="font-size:.8rem;color:var(--text-muted);padding:12px 0">No reminders needed today</div>';
-  } else {
-    alertList.innerHTML=alertEvs.map(a=>`<div style="background:var(--cream-dark);border:1px solid var(--border);border-left:3px solid ${a.sms_sent?'var(--success)':'#e67e22'};border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:.8rem">
-      <div style="font-weight:600">${a.client_name||a.title}</div>
-      <div style="color:var(--text-muted)">${a.event_type||a.category||'event'} · ${fmtDate(a.event_date)}</div>
-      ${!a.sms_sent?`<button class="btn btn-sms btn-sm" style="margin-top:6px" onclick="sendAlertFor('${a.id}','booking')">Send SMS</button>`:'<span style="color:var(--success);font-size:.72rem">✓ SMS sent</span>'}
+      const alertList = document.getElementById('dash-alerts-list');
+      const alertEvs = [...bookings.filter(b => b.event_date === tmr && b.sms_alert), ...events.filter(e => e.event_date === tmr && e.sms_alert)];
+      if (!alertEvs.length) {
+        alertList.innerHTML = '<div style="font-size:.8rem;color:var(--text-muted);padding:12px 0">No reminders needed today ✓</div>';
+      } else {
+        alertList.innerHTML = alertEvs.map(a => `<div style="background:var(--cream-dark);border:1px solid var(--border);border-left:3px solid ${a.sms_sent ? 'var(--success)' : '#e67e22'};border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:.8rem">
+      <div style="font-weight:600">${a.client_name || a.title}</div>
+      <div style="color:var(--text-muted)">${a.event_type || a.category || 'event'} · ${fmtDate(a.event_date)}</div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        ${!a.sms_sent ? `<button class="btn btn-sms btn-sm" onclick="sendAlertFor('${a.id}','booking')">Send SMS</button>` : '<span style="color:var(--success);font-size:.72rem">✓ SMS sent</span>'}
+        ${a.phone ? `<a class="btn btn-wa btn-sm" href="${waLink(a.phone, a.client_name || a.title, a.event_type || 'event', fmtDate(a.event_date))}" target="_blank">WhatsApp</a>` : ''}
+      </div>
     </div>`).join('');
-    document.getElementById('notif-dot').style.display='block';
-  }
+        document.getElementById('notif-dot').style.display = 'block';
+      }
 
-  // Badges
-  document.getElementById('badge-bookings').textContent=bookings.filter(b=>b.status==='pending').length;
-  document.getElementById('badge-events').textContent=events.filter(e=>e.event_date>=todayStr).length;
-  const todayAlertsCount=alertEvs.filter(a=>!a.sms_sent).length;
-  if(todayAlertsCount>0){
-    document.getElementById('badge-sms').textContent=todayAlertsCount;
-    document.getElementById('badge-sms').style.display='inline';
-  }
+      document.getElementById('badge-bookings').textContent = bookings.filter(b => b.status === 'pending').length;
+      document.getElementById('badge-events').textContent = events.filter(e => e.event_date >= todayStr).length;
+      const cnt = alertEvs.filter(a => !a.sms_sent).length;
+      if (cnt > 0) { document.getElementById('badge-sms').textContent = cnt; document.getElementById('badge-sms').style.display = 'inline'; }
 
-  // Alert banner
-  const banner=document.getElementById('alert-banner');
-  if(alertEvs.length){
-    banner.style.display='block';
-    banner.innerHTML=`⚠️ <strong>${alertEvs.length} event(s) tomorrow</strong> — ${alertEvs.map(a=>`<strong>${a.client_name||a.title}</strong>`).join(', ')}. <a href="#" onclick="gotoPage('sms');return false" style="color:#664d03;font-weight:600">Send reminders →</a>`;
-  } else { banner.style.display='none'; }
-}
+      const banner = document.getElementById('alert-banner');
+      if (alertEvs.length) {
+        banner.style.display = 'block';
+        banner.innerHTML = `⚠️ <strong>${alertEvs.length} event(s) tomorrow</strong> — ${alertEvs.map(a => `<strong>${a.client_name || a.title}</strong>`).join(', ')}. <a href="#" onclick="gotoPage('sms');return false" style="color:#664d03;font-weight:600">Send reminders →</a>`;
+      } else { banner.style.display = 'none'; }
+    }
 
-// ═══ BOOKINGS ═══
-async function renderBookings(){
-  const bookings = await dbGetBookings();
-  const filter=document.getElementById('filter-status').value;
-  const filtered=filter?bookings.filter(b=>b.status===filter):bookings;
-  document.getElementById('booking-count-label').textContent=`${filtered.length} booking${filtered.length!==1?'s':''}`;
-  const tbody=document.getElementById('bookings-tbody');
-  if(!filtered.length){
-    tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div>No bookings found</div></td></tr>';return;
-  }
-  tbody.innerHTML=filtered.map(b=>`<tr>
-    <td><strong>${b.client_name||'–'}</strong><br/><span style="font-size:.7rem;color:var(--text-muted)">${b.email||''}</span></td>
-    <td>${b.phone||'–'}</td>
-    <td>${b.event_type?`<span class="badge badge-${b.event_type==='wedding'?'wedding':'event'}">${b.event_type}</span>`:'–'}</td>
+    // BOOKINGS
+    async function renderBookings() {
+      const bookings = await dbGetBookings();
+      lastBookingCount = bookings.length;
+      const filter = document.getElementById('filter-status').value;
+      const search = (document.getElementById('booking-search')?.value || '').toLowerCase();
+      let filtered = filter ? bookings.filter(b => b.status === filter) : bookings;
+      if (search) filtered = filtered.filter(b =>
+        (b.client_name || '').toLowerCase().includes(search) ||
+        (b.phone || '').includes(search) ||
+        (b.event_type || '').toLowerCase().includes(search) ||
+        (b.venue || '').toLowerCase().includes(search) ||
+        (b.notes || '').toLowerCase().includes(search)
+      );
+      document.getElementById('booking-count-label').textContent = `${filtered.length} booking${filtered.length !== 1 ? 's' : ''}`;
+      const tbody = document.getElementById('bookings-tbody');
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div>No bookings found</div></td></tr>'; return;
+      }
+      tbody.innerHTML = filtered.map(b => `<tr>
+    <td>
+      <strong>${b.client_name || '–'}</strong>
+      <br/><span style="font-size:.7rem;color:var(--text-muted)">${b.email || ''}</span>
+    </td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px">
+        ${b.phone || '–'}
+        ${b.phone ? `<a href="${waLink(b.phone, b.client_name, b.event_type, fmtDate(b.event_date))}" target="_blank" title="WhatsApp" style="color:#25d366;text-decoration:none;font-size:14px">💬</a>` : ''}
+      </div>
+    </td>
+    <td>${b.event_type ? `<span class="badge badge-${b.event_type.toLowerCase() === 'wedding' ? 'wedding' : 'event'}">${b.event_type}</span>` : '–'}</td>
     <td>${fmtDate(b.event_date)}</td>
     <td>${fmtMoney(b.budget)}</td>
+    <td style="font-size:.72rem;color:var(--text-muted)">${b.created_at ? fmtDateTime(b.created_at) : '–'}</td>
     <td>
       <select onchange="updateBookingStatus('${b.id}',this.value)" style="font-size:.75rem;padding:3px 7px;border:1px solid var(--border);border-radius:6px;background:var(--cream);cursor:pointer">
-        ${['pending','confirmed','completed','cancelled'].map(s=>`<option value="${s}"${b.status===s?' selected':''}>${s}</option>`).join('')}
+        ${['pending', 'confirmed', 'completed', 'cancelled'].map(s => `<option value="${s}"${b.status === s ? ' selected' : ''}>${s}</option>`).join('')}
       </select>
     </td>
-    <td style="display:flex;gap:6px;flex-wrap:wrap">
+    <td style="display:flex;gap:4px;flex-wrap:wrap">
       <button class="btn btn-outline btn-sm" onclick="viewBooking('${b.id}')">View</button>
       <button class="btn btn-outline btn-sm" onclick="editBooking('${b.id}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="deleteBookingConfirm('${b.id}')">Del</button>
     </td>
   </tr>`).join('');
-}
+    }
 
-async function updateBookingStatus(id,status){
-  const b=localBookings.find(x=>x.id===id);
-  if(!b)return;
-  b.status=status;
-  await dbSaveBooking(b);
-  toast('Status updated');
-}
+    async function updateBookingStatus(id, status) {
+      const b = localBookings.find(x => x.id === id); if (!b) return;
+      const prev = b.status;
+      b.status = status;
+      await dbSaveBooking(b);
+      toast(`Status → ${status}`);
+    }
 
-function resetBookingForm(){
-  document.getElementById('edit-booking-id').value='';
-  document.getElementById('booking-form-title').textContent='New Booking';
-  ['b-name','b-phone','b-email','b-address','b-ref','b-venue','b-services','b-notes'].forEach(id=>{
-    document.getElementById(id).value='';
-  });
-  document.getElementById('b-budget').value='';
-  document.getElementById('b-type').value='';
-  document.getElementById('b-status').value='pending';
-  document.getElementById('b-alert').checked=true;
-  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+7);
-  document.getElementById('b-date').value=`${tomorrow.getFullYear()}-${pad(tomorrow.getMonth()+1)}-${pad(tomorrow.getDate())}`;
-}
+    function resetBookingForm() {
+      document.getElementById('edit-booking-id').value = '';
+      document.getElementById('booking-form-title').textContent = 'New Booking';
+      ['b-name', 'b-phone', 'b-email', 'b-address', 'b-ref', 'b-venue', 'b-services', 'b-notes'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('b-budget').value = '';
+      document.getElementById('b-type').value = '';
+      document.getElementById('b-status').value = 'pending';
+      document.getElementById('b-alert').checked = true;
+      const t = new Date(); t.setDate(t.getDate() + 7);
+      document.getElementById('b-date').value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
+    }
 
-async function saveBooking(){
-  const name=document.getElementById('b-name').value.trim();
-  const date=document.getElementById('b-date').value;
-  if(!name||!date){toast('Name and date are required','error');return;}
-  const editId=document.getElementById('edit-booking-id').value;
-  const b={
-    id: editId||undefined,
-    client_name:name,
-    phone:document.getElementById('b-phone').value.trim(),
-    email:document.getElementById('b-email').value.trim(),
-    address:document.getElementById('b-address').value.trim(),
-    referred_by:document.getElementById('b-ref').value.trim(),
-    event_type:document.getElementById('b-type').value,
-    event_date:date,
-    venue:document.getElementById('b-venue').value.trim(),
-    budget:document.getElementById('b-budget').value||null,
-    services:document.getElementById('b-services').value.trim(),
-    notes:document.getElementById('b-notes').value.trim(),
-    status:document.getElementById('b-status').value,
-    sms_alert:document.getElementById('b-alert').checked,
-    sms_sent:false,
-  };
-  await dbSaveBooking(b);
-  const msg=document.getElementById('save-booking-msg');
-  msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);
-  toast(editId?'Booking updated!':'Booking saved!');
-  if(!editId) resetBookingForm();
-}
+    async function saveBooking() {
+      const name = document.getElementById('b-name').value.trim();
+      const date = document.getElementById('b-date').value;
+      if (!name || !date) { toast('Name and date are required', 'error'); return; }
+      const editId = document.getElementById('edit-booking-id').value;
+      const b = {
+        id: editId || undefined,
+        client_name: name,
+        phone: document.getElementById('b-phone').value.trim(),
+        email: document.getElementById('b-email').value.trim(),
+        address: document.getElementById('b-address').value.trim(),
+        referred_by: document.getElementById('b-ref').value.trim(),
+        event_type: document.getElementById('b-type').value,
+        event_date: date,
+        venue: document.getElementById('b-venue').value.trim(),
+        budget: document.getElementById('b-budget').value || null,
+        services: document.getElementById('b-services').value.trim(),
+        notes: document.getElementById('b-notes').value.trim(),
+        status: document.getElementById('b-status').value,
+        sms_alert: document.getElementById('b-alert').checked,
+        sms_sent: false,
+      };
+      await dbSaveBooking(b);
+      const msg = document.getElementById('save-booking-msg');
+      msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500);
+      toast(editId ? 'Booking updated! ✓' : 'New booking saved! 🌸');
+      if (!editId) resetBookingForm();
+    }
 
-async function editBooking(id){
-  const b=localBookings.find(x=>x.id===id);if(!b)return;
-  gotoPage('add-booking');
-  document.getElementById('booking-form-title').textContent='Edit Booking';
-  document.getElementById('edit-booking-id').value=b.id;
-  document.getElementById('b-name').value=b.client_name||'';
-  document.getElementById('b-phone').value=b.phone||'';
-  document.getElementById('b-email').value=b.email||'';
-  document.getElementById('b-address').value=b.address||'';
-  document.getElementById('b-ref').value=b.referred_by||'';
-  document.getElementById('b-type').value=b.event_type||'';
-  document.getElementById('b-date').value=b.event_date||'';
-  document.getElementById('b-venue').value=b.venue||'';
-  document.getElementById('b-budget').value=b.budget||'';
-  document.getElementById('b-services').value=b.services||'';
-  document.getElementById('b-notes').value=b.notes||'';
-  document.getElementById('b-status').value=b.status||'pending';
-  document.getElementById('b-alert').checked=b.sms_alert!==false;
-}
+    async function editBooking(id) {
+      const b = localBookings.find(x => x.id === id); if (!b) return;
+      gotoPage('add-booking');
+      document.getElementById('booking-form-title').textContent = 'Edit Booking';
+      document.getElementById('edit-booking-id').value = b.id;
+      document.getElementById('b-name').value = b.client_name || '';
+      document.getElementById('b-phone').value = b.phone || '';
+      document.getElementById('b-email').value = b.email || '';
+      document.getElementById('b-address').value = b.address || '';
+      document.getElementById('b-ref').value = b.referred_by || '';
+      document.getElementById('b-type').value = b.event_type || '';
+      document.getElementById('b-date').value = b.event_date || '';
+      document.getElementById('b-venue').value = b.venue || '';
+      document.getElementById('b-budget').value = b.budget || '';
+      document.getElementById('b-services').value = b.services || '';
+      document.getElementById('b-notes').value = b.notes || '';
+      document.getElementById('b-status').value = b.status || 'pending';
+      document.getElementById('b-alert').checked = b.sms_alert !== false;
+    }
 
-async function deleteBookingConfirm(id){
-  const b=localBookings.find(x=>x.id===id);
-  if(!b)return;
-  if(!confirm(`Delete booking for ${b.client_name}? This cannot be undone.`))return;
-  await dbDeleteBooking(id);
-  renderBookings();
-  toast('Booking deleted','warn');
-}
+    async function deleteBookingConfirm(id) {
+      const b = localBookings.find(x => x.id === id); if (!b) return;
+      if (!confirm(`Delete booking for ${b.client_name}? This cannot be undone.`)) return;
+      await dbDeleteBooking(id);
+      renderBookings();
+      toast('Booking deleted', 'warn');
+    }
 
-function viewBooking(id){
-  const b=localBookings.find(x=>x.id===id);if(!b)return;
-  document.getElementById('booking-detail-body').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:.82rem">
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Client</div><strong>${b.client_name||'–'}</strong></div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Phone</div>${b.phone||'–'}</div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Email</div>${b.email||'–'}</div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Address</div>${b.address||'–'}</div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Event Type</div>${b.event_type||'–'}</div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Event Date</div>${fmtDate(b.event_date)}</div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Venue</div>${b.venue||'–'}</div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Budget</div>${fmtMoney(b.budget)}</div>
-      <div style="grid-column:1/-1"><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Services</div>${b.services||'–'}</div>
-      <div style="grid-column:1/-1"><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Notes</div>${b.notes||'–'}</div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Status</div><span class="badge badge-${b.status}">${b.status}</span></div>
-      <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">SMS Alert</div>${b.sms_alert?'✓ Enabled':'Off'}${b.sms_sent?' · <span style="color:var(--success)">Sent</span>':''}</div>
+    function viewBooking(id) {
+      const b = localBookings.find(x => x.id === id); if (!b) return;
+      const waUrl = b.phone ? waLink(b.phone, b.client_name, b.event_type || 'event', fmtDate(b.event_date)) : null;
+      document.getElementById('booking-detail-body').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-field"><label>Client</label><div class="val">${b.client_name || '–'}</div></div>
+      <div class="detail-field"><label>Phone</label><div class="val">${b.phone || '–'}${b.phone ? ` <a href="tel:${b.phone}" style="color:var(--gold);font-size:.75rem;margin-left:4px">Call</a>` : ''}</div></div>
+      <div class="detail-field"><label>Email</label><div class="val">${b.email || '–'}</div></div>
+      <div class="detail-field"><label>Address</label><div class="val">${b.address || '–'}</div></div>
+      <div class="detail-field"><label>Event Type</label><div class="val">${b.event_type || '–'}</div></div>
+      <div class="detail-field"><label>Event Date</label><div class="val">${fmtDate(b.event_date)}</div></div>
+      <div class="detail-field"><label>Venue</label><div class="val">${b.venue || '–'}</div></div>
+      <div class="detail-field"><label>Budget</label><div class="val">${fmtMoney(b.budget)}</div></div>
+      <div class="detail-field" style="grid-column:1/-1"><label>Services</label><div class="val">${b.services || '–'}</div></div>
+      <div class="detail-field" style="grid-column:1/-1"><label>Notes</label><div class="val">${b.notes || '–'}</div></div>
+      <div class="detail-field"><label>Status</label><div class="val"><span class="badge badge-${b.status}">${b.status}</span></div></div>
+      <div class="detail-field"><label>Received</label><div class="val">${b.created_at ? new Date(b.created_at).toLocaleString('en-NP') : '–'}</div></div>
+      <div class="detail-field"><label>SMS Alert</label><div class="val">${b.sms_alert ? '✓ Enabled' : 'Off'}${b.sms_sent ? ' · <span style="color:var(--success)">Sent</span>' : ''}</div></div>
+      ${b.referred_by ? `<div class="detail-field"><label>Referred by</label><div class="val">${b.referred_by}</div></div>` : ''}
     </div>
-    <div style="display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+    <div class="detail-actions">
       <button class="btn btn-gold btn-sm" onclick="editBooking('${b.id}');closeBookingModal()">Edit</button>
-      ${b.phone&&CFG.smsToken?`<button class="btn btn-sms btn-sm" onclick="sendAlertFor('${b.id}','booking')">Send SMS</button>`:''}
+      ${waUrl ? `<a class="btn btn-wa btn-sm" href="${waUrl}" target="_blank">💬 WhatsApp</a>` : ''}
+      ${b.phone ? `<a class="btn btn-outline btn-sm" href="tel:${b.phone}">📞 Call</a>` : ''}
+      ${b.phone && CFG.smsToken ? `<button class="btn btn-sms btn-sm" onclick="sendAlertFor('${b.id}','booking')">Send SMS</button>` : ''}
       <button class="btn btn-outline btn-sm" onclick="closeBookingModal()">Close</button>
     </div>`;
-  document.getElementById('booking-modal').classList.add('open');
-}
-function closeBookingModal(){ document.getElementById('booking-modal').classList.remove('open'); }
+      document.getElementById('booking-modal').classList.add('open');
+    }
+    function closeBookingModal() { document.getElementById('booking-modal').classList.remove('open'); }
 
-// ═══ EVENTS ═══
-async function renderEvents(){
-  const events = await dbGetEvents();
-  const tbody=document.getElementById('events-tbody');
-  if(!events.length){
-    tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">📅</div>No events yet</div></td></tr>';return;
-  }
-  tbody.innerHTML=events.map(e=>`<tr>
-    <td><strong>${e.title}</strong>${e.client_name?`<br/><span style="font-size:.7rem;color:var(--text-muted)">${e.client_name}</span>`:''}</td>
+    // EVENTS
+    async function renderEvents() {
+      const events = await dbGetEvents();
+      const tbody = document.getElementById('events-tbody');
+      if (!events.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📅</div>No events yet</div></td></tr>'; return; }
+      tbody.innerHTML = events.map(e => `<tr>
+    <td><strong>${e.title}</strong>${e.client_name ? `<br/><span style="font-size:.7rem;color:var(--text-muted)">${e.client_name}</span>` : ''}</td>
     <td><span class="badge badge-${e.category}">${e.category}</span></td>
     <td>${fmtDate(e.event_date)}</td>
-    <td>${e.event_time||'–'}</td>
-    <td>${e.location||'–'}</td>
-    <td>${e.sms_alert?`<span style="color:${e.sms_sent?'var(--success)':'var(--warn)'}">${e.sms_sent?'✓ Sent':'Pending'}</span>`:'Off'}</td>
+    <td>${e.event_time || '–'}</td>
+    <td>${e.location || '–'}</td>
+    <td>${e.sms_alert ? `<span style="color:${e.sms_sent ? 'var(--success)' : 'var(--warn)'}">${e.sms_sent ? '✓ Sent' : 'Pending'}</span>` : 'Off'}</td>
     <td style="display:flex;gap:6px">
       <button class="btn btn-outline btn-sm" onclick="editEvent('${e.id}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="deleteEventConfirm('${e.id}')">Del</button>
     </td>
   </tr>`).join('');
-}
-
-function openEventModal(){
-  document.getElementById('event-modal-title').textContent='Add Event';
-  document.getElementById('edit-event-id').value='';
-  document.getElementById('em-title').value='';
-  document.getElementById('em-cat').value='work';
-  document.getElementById('em-date').value=todayStr;
-  document.getElementById('em-time').value='';
-  document.getElementById('em-loc').value='';
-  document.getElementById('em-client').value='';
-  document.getElementById('em-notes').value='';
-  document.getElementById('em-alert').checked=true;
-  document.getElementById('event-modal').classList.add('open');
-}
-function closeEventModal(){ document.getElementById('event-modal').classList.remove('open'); }
-
-async function editEvent(id){
-  await dbGetEvents();
-  const e=localEvents.find(x=>x.id===id);if(!e)return;
-  document.getElementById('event-modal-title').textContent='Edit Event';
-  document.getElementById('edit-event-id').value=e.id;
-  document.getElementById('em-title').value=e.title||'';
-  document.getElementById('em-cat').value=e.category||'work';
-  document.getElementById('em-date').value=e.event_date||'';
-  document.getElementById('em-time').value=e.event_time||'';
-  document.getElementById('em-loc').value=e.location||'';
-  document.getElementById('em-client').value=e.client_name||'';
-  document.getElementById('em-notes').value=e.notes||'';
-  document.getElementById('em-alert').checked=e.sms_alert!==false;
-  document.getElementById('event-modal').classList.add('open');
-}
-
-async function saveEvent(){
-  const title=document.getElementById('em-title').value.trim();
-  const date=document.getElementById('em-date').value;
-  if(!title||!date){toast('Title and date required','error');return;}
-  const editId=document.getElementById('edit-event-id').value;
-  const ev={
-    id:editId||undefined,
-    title,category:document.getElementById('em-cat').value,
-    event_date:date,event_time:document.getElementById('em-time').value,
-    location:document.getElementById('em-loc').value.trim(),
-    client_name:document.getElementById('em-client').value.trim(),
-    notes:document.getElementById('em-notes').value.trim(),
-    sms_alert:document.getElementById('em-alert').checked,
-    sms_sent:false,
-  };
-  await dbSaveEvent(ev);
-  closeEventModal();renderEvents();renderCal();
-  toast(editId?'Event updated!':'Event saved!');
-}
-
-async function deleteEventConfirm(id){
-  const e=localEvents.find(x=>x.id===id);
-  if(!confirm(`Delete "${e?.title}"?`))return;
-  await dbDeleteEvent(id);renderEvents();toast('Deleted','warn');
-}
-
-// ═══ CALENDAR ═══
-let calYear=now.getFullYear(), calMonth=now.getMonth();
-async function renderCal(){
-  await dbGetBookings(); await dbGetEvents();
-  document.getElementById('cal-label').textContent=`${MONTHS[calMonth]} ${calYear}`;
-  const first=new Date(calYear,calMonth,1).getDay();
-  const days=new Date(calYear,calMonth+1,0).getDate();
-  let html='';
-  for(let i=0;i<first;i++) html+='<div class="cal-cell empty"></div>';
-  for(let d=1;d<=days;d++){
-    const ds=`${calYear}-${pad(calMonth+1)}-${pad(d)}`;
-    const isToday=ds===todayStr;
-    const dayBookings=localBookings.filter(b=>b.event_date===ds);
-    const dayEvents=localEvents.filter(e=>e.event_date===ds);
-    const isAlertDay=localBookings.some(b=>{
-      if(!b.event_date||!b.sms_alert)return false;
-      const prev=new Date(b.event_date+'T12:00:00');prev.setDate(prev.getDate()-1);
-      return `${prev.getFullYear()}-${pad(prev.getMonth()+1)}-${pad(prev.getDate())}`===ds;
-    });
-    const dots=[
-      ...dayBookings.map(()=>'<span class="dot dot-booking"></span>'),
-      ...dayEvents.map(()=>'<span class="dot dot-event"></span>'),
-      ...(isAlertDay?['<span class="dot dot-alert"></span>']:[]),
-    ].join('');
-    html+=`<div class="cal-cell${isToday?' today':''}${isAlertDay?' has-alert':''}" onclick="showCalDay('${ds}')">
-      <div class="cn">${d}</div>
-      <div class="dots">${dots}</div>
-    </div>`;
-  }
-  document.getElementById('cal-cells').innerHTML=html;
-  document.getElementById('cal-detail').style.display='none';
-}
-function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--}renderCal()}
-function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++}renderCal()}
-function showCalDay(ds){
-  const d=new Date(ds+'T12:00:00');
-  document.getElementById('cal-detail-title').textContent=`${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-  const bks=localBookings.filter(b=>b.event_date===ds);
-  const evs=localEvents.filter(e=>e.event_date===ds);
-  let html='';
-  if(!bks.length&&!evs.length){ html='<div style="font-size:.8rem;color:var(--text-muted)">Nothing scheduled</div>'; }
-  html+=bks.map(b=>`<div style="background:rgba(184,150,92,.1);border:1px solid rgba(184,150,92,.3);border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:.8rem">
-    <strong>${b.client_name}</strong> · ${b.event_type||'booking'} <span class="badge badge-${b.status}" style="margin-left:4px">${b.status}</span>
-    ${b.venue?`<div style="color:var(--text-muted);font-size:.72rem;margin-top:2px">📍 ${b.venue}</div>`:''}
-  </div>`).join('');
-  html+=evs.map(e=>`<div style="background:rgba(30,77,53,.07);border:1px solid rgba(30,77,53,.2);border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:.8rem">
-    <strong>${e.title}</strong> <span class="badge badge-${e.category}">${e.category}</span>
-    ${e.event_time?`<span style="color:var(--text-muted);margin-left:6px">${e.event_time}</span>`:''}
-    ${e.location?`<div style="color:var(--text-muted);font-size:.72rem;margin-top:2px">📍 ${e.location}</div>`:''}
-  </div>`).join('');
-  document.getElementById('cal-detail-body').innerHTML=html;
-  document.getElementById('cal-detail').style.display='block';
-}
-
-// ═══ SMS ═══
-async function renderSMS(){
-  const hasToken=!!CFG.smsToken;
-  document.getElementById('sms-api-warn').style.display=hasToken?'none':'block';
-  await dbGetBookings();await dbGetEvents();
-  const tmr=tomorrowStr();
-  const pendingBookings=localBookings.filter(b=>b.event_date===tmr&&b.sms_alert&&!b.sms_sent);
-  const pendingEvents=localEvents.filter(e=>e.event_date===tmr&&e.sms_alert&&!e.sms_sent);
-  const all=[...pendingBookings,...pendingEvents];
-  const pendingEl=document.getElementById('sms-pending-list');
-  if(!all.length){
-    pendingEl.innerHTML='<div style="font-size:.8rem;color:var(--text-muted);background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:14px">No events tomorrow needing reminders. ✓</div>';
-  } else {
-    pendingEl.innerHTML=all.map(a=>`<div class="sms-log-item">
-      <div>
-        <div style="font-weight:600">${a.client_name||a.title}</div>
-        <div class="sms-log-meta">${a.event_type||a.category||'event'} · ${fmtDate(a.event_date)} · ${a.phone||'No phone'}</div>
-      </div>
-      <button class="btn btn-sms btn-sm" onclick="sendAlertFor('${a.id}','${a.event_type?'booking':'event'}')">Send SMS</button>
-    </div>`).join('');
-  }
-  // Log
-  const logEl=document.getElementById('sms-log-list');
-  if(!smsLog.length){
-    logEl.innerHTML='<div style="font-size:.8rem;color:var(--text-muted)">No SMS sent yet</div>';
-  } else {
-    logEl.innerHTML=smsLog.slice(0,20).map(l=>`<div class="sms-log-item">
-      <div>
-        <div>${l.phone}</div>
-        <div class="sms-log-meta">${l.message?.slice(0,80)}${l.message?.length>80?'...':''}</div>
-      </div>
-      <div style="text-align:right">
-        <span style="font-size:.7rem;color:${l.status==='success'?'var(--success)':'var(--danger)'}">
-          ${l.status==='success'?'✓ Sent':'✗ Failed'}
-        </span>
-        <div class="sms-log-meta">${l.sent_at?new Date(l.sent_at).toLocaleString():''}</div>
-      </div>
-    </div>`).join('');
-  }
-}
-
-async function sparrowSend(phone, message){
-  // ═══════════════════════════════════════════
-  // SPARROW SMS API CALL
-  // Docs: https://docs.sparrowsms.com
-  // ═══════════════════════════════════════════
-  const token = CFG.smsToken;
-  const from  = CFG.smsFrom;
-  if(!token){ toast('Sparrow SMS token not configured. Go to Settings.','error'); return false; }
-  if(!phone || phone.length < 10){ toast('Invalid phone number','error'); return false; }
-
-  try {
-    // NOTE: Sparrow SMS requires a backend proxy due to CORS.
-    // In production, route this through your Node.js/Express backend:
-    //   POST /api/send-sms → backend calls Sparrow API → returns response
-    //
-    // Direct API endpoint (use from backend only):
-    //   https://api.sparrowsms.com/v2/sms/
-    //   POST body: { token, from, to: phone, text: message }
-    //
-    // For demo/testing, we simulate the call:
-    const BACKEND_URL = localStorage.getItem('cfg_backend_url') || '';
-    if(!BACKEND_URL){
-      // DEMO MODE — log as simulated
-      console.log(`[Sparrow SMS DEMO] To: ${phone}, From: ${from}, Msg: ${message}`);
-      await dbSaveSmsLog({ phone, message, status:'demo', sent_at: new Date().toISOString() });
-      toast(`SMS simulated (no backend URL set). Check Settings.`,'warn');
-      return true;
     }
-    const res = await fetch(`${BACKEND_URL}/api/send-sms`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ token, from, to: phone, text: message }),
-    });
-    const data = await res.json();
-    const success = data.response_code === 200;
-    await dbSaveSmsLog({ phone, message, status: success?'success':'error', sent_at: new Date().toISOString() });
-    return success;
-  } catch(err){
-    console.error('SMS error', err);
-    await dbSaveSmsLog({ phone, message, status:'error', sent_at: new Date().toISOString() });
-    return false;
-  }
-}
 
-async function sendAlertFor(id, type){
-  const isBooking = type==='booking';
-  const item = isBooking ? localBookings.find(b=>b.id===id) : localEvents.find(e=>e.id===id);
-  if(!item) return;
-  const name  = item.client_name || item.title;
-  const date  = fmtDate(item.event_date);
-  const eType = item.event_type || item.category || 'event';
-  const message = `Hello ${name}, this is a reminder from ${CFG.bizName}. Your ${eType} is scheduled for tomorrow (${date}). Please confirm if everything is ready. Thank you!`;
-  const adminMsg = `[${CFG.bizName}] Reminder: ${name}'s ${eType} is TOMORROW (${date}). ${item.venue?'Venue: '+item.venue:''}`;
+    function openEventModal() {
+      document.getElementById('event-modal-title').textContent = 'Add Event';
+      document.getElementById('edit-event-id').value = '';
+      document.getElementById('em-title').value = '';
+      document.getElementById('em-cat').value = 'work';
+      document.getElementById('em-date').value = todayStr;
+      document.getElementById('em-time').value = '';
+      document.getElementById('em-loc').value = '';
+      document.getElementById('em-client').value = '';
+      document.getElementById('em-notes').value = '';
+      document.getElementById('em-alert').checked = true;
+      document.getElementById('event-modal').classList.add('open');
+    }
+    function closeEventModal() { document.getElementById('event-modal').classList.remove('open'); }
 
-  let sent = false;
-  // Send to client
-  if(item.phone){
-    sent = await sparrowSend(item.phone, message);
-    if(sent) toast(`SMS sent to ${name}`);
-    else toast(`Failed to send to ${name}`,'error');
-  }
-  // Send to admin
-  if(CFG.adminPhone){
-    await sparrowSend(CFG.adminPhone, adminMsg);
-  }
-  // Mark as sent
-  if(sent || !item.phone){
-    item.sms_sent = true;
-    if(isBooking) await dbSaveBooking(item); else await dbSaveEvent(item);
-  }
-  renderSMS(); refreshDashboard();
-}
+    async function editEvent(id) {
+      await dbGetEvents();
+      const e = localEvents.find(x => x.id === id); if (!e) return;
+      document.getElementById('event-modal-title').textContent = 'Edit Event';
+      document.getElementById('edit-event-id').value = e.id;
+      document.getElementById('em-title').value = e.title || '';
+      document.getElementById('em-cat').value = e.category || 'work';
+      document.getElementById('em-date').value = e.event_date || '';
+      document.getElementById('em-time').value = e.event_time || '';
+      document.getElementById('em-loc').value = e.location || '';
+      document.getElementById('em-client').value = e.client_name || '';
+      document.getElementById('em-notes').value = e.notes || '';
+      document.getElementById('em-alert').checked = e.sms_alert !== false;
+      document.getElementById('event-modal').classList.add('open');
+    }
 
-async function sendAllPendingAlerts(){
-  const tmr=tomorrowStr();
-  const all=[
-    ...localBookings.filter(b=>b.event_date===tmr&&b.sms_alert&&!b.sms_sent),
-    ...localEvents.filter(e=>e.event_date===tmr&&e.sms_alert&&!e.sms_sent),
-  ];
-  if(!all.length){ toast('No pending alerts for tomorrow'); return; }
-  for(const a of all){
-    await sendAlertFor(a.id, a.event_type?'booking':'event');
-    await new Promise(r=>setTimeout(r,600));
-  }
-  toast(`Sent ${all.length} reminder(s)!`);
-}
+    async function saveEvent() {
+      const title = document.getElementById('em-title').value.trim();
+      const date = document.getElementById('em-date').value;
+      if (!title || !date) { toast('Title and date required', 'error'); return; }
+      const editId = document.getElementById('edit-event-id').value;
+      const ev = { id: editId || undefined, title, category: document.getElementById('em-cat').value, event_date: date, event_time: document.getElementById('em-time').value, location: document.getElementById('em-loc').value.trim(), client_name: document.getElementById('em-client').value.trim(), notes: document.getElementById('em-notes').value.trim(), sms_alert: document.getElementById('em-alert').checked, sms_sent: false };
+      await dbSaveEvent(ev);
+      closeEventModal(); renderEvents(); renderCal();
+      toast(editId ? 'Event updated!' : 'Event saved!');
+    }
 
-async function sendManualSMS(){
-  const phone=document.getElementById('sms-phone').value.trim();
-  const msg=document.getElementById('sms-msg').value.trim();
-  if(!phone||!msg){ toast('Phone and message required','error'); return; }
-  const ok = await sparrowSend(phone, msg);
-  if(ok){ document.getElementById('sms-phone').value=''; document.getElementById('sms-msg').value=''; }
-  renderSMS();
-}
+    async function deleteEventConfirm(id) {
+      const e = localEvents.find(x => x.id === id);
+      if (!confirm(`Delete "${e?.title}"?`)) return;
+      await dbDeleteEvent(id); renderEvents(); toast('Deleted', 'warn');
+    }
 
-// ═══ SETTINGS ═══
-function loadSettings(){
-  document.getElementById('cfg-sb-url').value   = localStorage.getItem('cfg_sb_url')||'';
-  document.getElementById('cfg-sb-key').value   = localStorage.getItem('cfg_sb_anon')||'';
-  document.getElementById('cfg-sms-token').value= localStorage.getItem('cfg_sms_token')||'';
-  document.getElementById('cfg-sms-from').value = localStorage.getItem('cfg_sms_from')||'FloralRoots';
-  document.getElementById('cfg-sms-admin').value= localStorage.getItem('cfg_sms_admin')||'';
-  document.getElementById('cfg-biz-name').value = localStorage.getItem('cfg_biz_name')||'Floral Roots & Decors';
-  document.getElementById('cfg-admin-name').value=localStorage.getItem('cfg_admin_name')||'';
-}
-function saveSettings(){
-  localStorage.setItem('cfg_sb_url',   document.getElementById('cfg-sb-url').value.trim());
-  localStorage.setItem('cfg_sb_anon',  document.getElementById('cfg-sb-key').value.trim());
-  localStorage.setItem('cfg_sms_token',document.getElementById('cfg-sms-token').value.trim());
-  localStorage.setItem('cfg_sms_from', document.getElementById('cfg-sms-from').value.trim());
-  localStorage.setItem('cfg_sms_admin',document.getElementById('cfg-sms-admin').value.trim());
-  localStorage.setItem('cfg_biz_name', document.getElementById('cfg-biz-name').value.trim());
-  localStorage.setItem('cfg_admin_name',document.getElementById('cfg-admin-name').value.trim());
-  _sb = null; // reset supabase client so it reinitialises with new keys
-  document.getElementById('admin-display').textContent = document.getElementById('cfg-admin-name').value.trim()||'Admin';
-  const msg=document.getElementById('settings-saved-msg');
-  msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);
-  toast('Settings saved!');
-}
-async function testSMS(){
-  const phone=CFG.adminPhone;
-  if(!phone){ toast('Set Admin Phone in settings first','error'); return; }
-  await sparrowSend(phone, `Test SMS from ${CFG.bizName} admin panel. Setup is working!`);
-}
-function copySQL(){
-  const sql=document.getElementById('sql-copy').textContent;
-  navigator.clipboard.writeText(sql).then(()=>toast('SQL copied!')).catch(()=>{
-    const t=document.createElement('textarea');t.value=sql;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('SQL copied!');
-  });
-}
+    // CALENDAR
+    let calYear = now.getFullYear(), calMonth = now.getMonth();
+    async function renderCal() {
+      await dbGetBookings(); await dbGetEvents();
+      document.getElementById('cal-label').textContent = `${MONTHS[calMonth]} ${calYear}`;
+      const first = new Date(calYear, calMonth, 1).getDay();
+      const days = new Date(calYear, calMonth + 1, 0).getDate();
+      let html = '';
+      for (let i = 0; i < first; i++) html += '<div class="cal-cell empty"></div>';
+      for (let d = 1; d <= days; d++) {
+        const ds = `${calYear}-${pad(calMonth + 1)}-${pad(d)}`;
+        const isToday = ds === todayStr;
+        const dayB = localBookings.filter(b => b.event_date === ds);
+        const dayE = localEvents.filter(e => e.event_date === ds);
+        const isAlert = localBookings.some(b => { if (!b.event_date || !b.sms_alert) return false; const p = new Date(b.event_date + 'T12:00:00'); p.setDate(p.getDate() - 1); return `${p.getFullYear()}-${pad(p.getMonth() + 1)}-${pad(p.getDate())}` === ds; });
+        const dots = [...dayB.map(() => '<span class="dot dot-booking"></span>'), ...dayE.map(() => '<span class="dot dot-event"></span>'), ...(isAlert ? ['<span class="dot dot-alert"></span>'] : [])].join('');
+        html += `<div class="cal-cell${isToday ? ' today' : ''}${isAlert ? ' has-alert' : ''}" onclick="showCalDay('${ds}')"><div class="cn">${d}</div><div class="dots">${dots}</div></div>`;
+      }
+      document.getElementById('cal-cells').innerHTML = html;
+      document.getElementById('cal-detail').style.display = 'none';
+    }
+    function calPrev() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear-- } renderCal() }
+    function calNext() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++ } renderCal() }
+    function showCalDay(ds) {
+      const d = new Date(ds + 'T12:00:00');
+      document.getElementById('cal-detail-title').textContent = `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+      const bks = localBookings.filter(b => b.event_date === ds);
+      const evs = localEvents.filter(e => e.event_date === ds);
+      let html = '';
+      if (!bks.length && !evs.length) { html = '<div style="font-size:.8rem;color:var(--text-muted)">Nothing scheduled</div>'; }
+      html += bks.map(b => `<div style="background:rgba(184,150,92,.1);border:1px solid rgba(184,150,92,.3);border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:.8rem;display:flex;justify-content:space-between;align-items:center">
+    <div><strong>${b.client_name}</strong> · ${b.event_type || 'booking'} <span class="badge badge-${b.status}" style="margin-left:4px">${b.status}</span>${b.venue ? `<div style="color:var(--text-muted);font-size:.72rem;margin-top:2px">📍 ${b.venue}</div>` : ''}</div>
+    <div style="display:flex;gap:4px">
+      <button class="btn btn-outline btn-sm" onclick="viewBooking('${b.id}')">View</button>
+      ${b.phone ? `<a class="btn btn-wa btn-sm" href="${waLink(b.phone, b.client_name, b.event_type, fmtDate(b.event_date))}" target="_blank">💬</a>` : ''}
+    </div>
+  </div>`).join('');
+      html += evs.map(e => `<div style="background:rgba(30,77,53,.07);border:1px solid rgba(30,77,53,.2);border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:.8rem">
+    <strong>${e.title}</strong> <span class="badge badge-${e.category}">${e.category}</span>
+    ${e.event_time ? `<span style="color:var(--text-muted);margin-left:6px">${e.event_time}</span>` : ''}
+    ${e.location ? `<div style="color:var(--text-muted);font-size:.72rem;margin-top:2px">📍 ${e.location}</div>` : ''}
+  </div>`).join('');
+      document.getElementById('cal-detail-body').innerHTML = html;
+      document.getElementById('cal-detail').style.display = 'block';
+    }
 
-// ═══ TOPBAR DATE ═══
-function setTopbarDate(){
-  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  document.getElementById('topbar-date').textContent=`${days[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-}
+    // SMS
+    async function renderSMS() {
+      document.getElementById('sms-api-warn').style.display = CFG.smsToken ? 'none' : 'block';
+      await dbGetBookings(); await dbGetEvents();
+      const tmr = tomorrowStr();
+      const all = [...localBookings.filter(b => b.event_date === tmr && b.sms_alert && !b.sms_sent), ...localEvents.filter(e => e.event_date === tmr && e.sms_alert && !e.sms_sent)];
+      const pendingEl = document.getElementById('sms-pending-list');
+      if (!all.length) {
+        pendingEl.innerHTML = '<div style="font-size:.8rem;color:var(--text-muted);background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:14px">No events tomorrow needing reminders ✓</div>';
+      } else {
+        pendingEl.innerHTML = all.map(a => `<div class="sms-log-item">
+      <div>
+        <div style="font-weight:600">${a.client_name || a.title}</div>
+        <div class="sms-log-meta">${a.event_type || a.category || 'event'} · ${fmtDate(a.event_date)} · ${a.phone || 'No phone'}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sms btn-sm" onclick="sendAlertFor('${a.id}','${a.event_type ? 'booking' : 'event'}')">SMS</button>
+        ${a.phone ? `<a class="btn btn-wa btn-sm" href="${waLink(a.phone, a.client_name || a.title, a.event_type || 'event', fmtDate(a.event_date))}" target="_blank">💬</a>` : ''}
+      </div>
+    </div>`).join('');
+      }
+      const logEl = document.getElementById('sms-log-list');
+      if (!smsLog.length) {
+        logEl.innerHTML = '<div style="font-size:.8rem;color:var(--text-muted)">No SMS sent yet</div>';
+      } else {
+        logEl.innerHTML = smsLog.slice(0, 20).map(l => `<div class="sms-log-item">
+      <div><div>${l.phone}</div><div class="sms-log-meta">${l.message?.slice(0, 80)}${l.message?.length > 80 ? '...' : ''}</div></div>
+      <div style="text-align:right"><span style="font-size:.7rem;color:${l.status === 'success' ? 'var(--success)' : 'var(--danger)'}">${l.status === 'success' ? '✓ Sent' : '✗ Failed'}</span><div class="sms-log-meta">${l.sent_at ? new Date(l.sent_at).toLocaleString() : ''}</div></div>
+    </div>`).join('');
+      }
+    }
 
-// ═══ INIT ═══
-setTopbarDate();
-checkAuth();
-if(sessionStorage.getItem('fl_auth')){
-  refreshDashboard();
-}
-</script>
+    async function sparrowSend(phone, message) {
+      const token = CFG.smsToken, from = CFG.smsFrom;
+      if (!token) { toast('Sparrow SMS token not configured', 'error'); return false; }
+      if (!phone || phone.length < 10) { toast('Invalid phone number', 'error'); return false; }
+      try {
+        const BACKEND_URL = localStorage.getItem('cfg_backend_url') || '';
+        if (!BACKEND_URL) {
+          console.log(`[Sparrow DEMO] To:${phone} Msg:${message}`);
+          await dbSaveSmsLog({ phone, message, status: 'demo', sent_at: new Date().toISOString() });
+          toast('SMS simulated (no backend URL)', 'warn');
+          return true;
+        }
+        const res = await fetch(`${BACKEND_URL}/api/send-sms`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, from, to: phone, text: message }) });
+        const data = await res.json();
+        const success = data.response_code === 200;
+        await dbSaveSmsLog({ phone, message, status: success ? 'success' : 'error', sent_at: new Date().toISOString() });
+        return success;
+      } catch (err) {
+        await dbSaveSmsLog({ phone, message, status: 'error', sent_at: new Date().toISOString() });
+        return false;
+      }
+    }
+
+    async function sendAlertFor(id, type) {
+      const isBooking = type === 'booking';
+      const item = isBooking ? localBookings.find(b => b.id === id) : localEvents.find(e => e.id === id);
+      if (!item) return;
+      const name = item.client_name || item.title;
+      const date = fmtDate(item.event_date);
+      const eType = item.event_type || item.category || 'event';
+      const message = `Hello ${name}, this is a reminder from ${CFG.bizName}. Your ${eType} is scheduled for tomorrow (${date}). Please confirm if everything is ready. Thank you!`;
+      const adminMsg = `[${CFG.bizName}] Reminder: ${name}'s ${eType} is TOMORROW (${date}). ${item.venue ? 'Venue: ' + item.venue : ''}`;
+      let sent = false;
+      if (item.phone) { sent = await sparrowSend(item.phone, message); if (sent) toast(`SMS sent to ${name}`); else toast(`Failed to send to ${name}`, 'error'); }
+      if (CFG.adminPhone) await sparrowSend(CFG.adminPhone, adminMsg);
+      if (sent || !item.phone) { item.sms_sent = true; if (isBooking) await dbSaveBooking(item); else await dbSaveEvent(item); }
+      renderSMS(); refreshDashboard();
+    }
+
+    async function sendAllPendingAlerts() {
+      const tmr = tomorrowStr();
+      const all = [...localBookings.filter(b => b.event_date === tmr && b.sms_alert && !b.sms_sent), ...localEvents.filter(e => e.event_date === tmr && e.sms_alert && !e.sms_sent)];
+      if (!all.length) { toast('No pending alerts for tomorrow'); return; }
+      for (const a of all) { await sendAlertFor(a.id, a.event_type ? 'booking' : 'event'); await new Promise(r => setTimeout(r, 600)); }
+      toast(`Sent ${all.length} reminder(s)!`);
+    }
+
+    async function sendManualSMS() {
+      const phone = document.getElementById('sms-phone').value.trim();
+      const msg = document.getElementById('sms-msg').value.trim();
+      if (!phone || !msg) { toast('Phone and message required', 'error'); return; }
+      const ok = await sparrowSend(phone, msg);
+      if (ok) { document.getElementById('sms-phone').value = ''; document.getElementById('sms-msg').value = ''; }
+      renderSMS();
+    }
+
+    // SETTINGS
+    function loadSettings() {
+      document.getElementById('cfg-sb-url').value = SUPABASE_URL;
+      document.getElementById('cfg-sms-token').value = localStorage.getItem('cfg_sms_token') || '';
+      document.getElementById('cfg-sms-from').value = localStorage.getItem('cfg_sms_from') || 'FloralRoots';
+      document.getElementById('cfg-sms-admin').value = localStorage.getItem('cfg_sms_admin') || '';
+      document.getElementById('cfg-biz-name').value = localStorage.getItem('cfg_biz_name') || 'Floral Roots & Decors';
+      document.getElementById('cfg-admin-name').value = localStorage.getItem('cfg_admin_name') || '';
+    }
+    function saveSettings() {
+      localStorage.setItem('cfg_sms_token', document.getElementById('cfg-sms-token').value.trim());
+      localStorage.setItem('cfg_sms_from', document.getElementById('cfg-sms-from').value.trim());
+      localStorage.setItem('cfg_sms_admin', document.getElementById('cfg-sms-admin').value.trim());
+      localStorage.setItem('cfg_biz_name', document.getElementById('cfg-biz-name').value.trim());
+      localStorage.setItem('cfg_admin_name', document.getElementById('cfg-admin-name').value.trim());
+      const newPass = document.getElementById('cfg-admin-pass').value;
+      if (newPass) localStorage.setItem('cfg_admin_pass', newPass);
+      document.getElementById('admin-display').textContent = document.getElementById('cfg-admin-name').value.trim() || 'Admin';
+      const msg = document.getElementById('settings-saved-msg');
+      msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500);
+      toast('Settings saved!');
+    }
+    async function testSMS() {
+      const phone = CFG.adminPhone;
+      if (!phone) { toast('Set Admin Phone in settings first', 'error'); return; }
+      await sparrowSend(phone, `Test SMS from ${CFG.bizName} admin panel. Setup is working!`);
+    }
+
+    // TOPBAR DATE
+    function setTopbarDate() {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      document.getElementById('topbar-date').textContent = `${days[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+    }
+
+    // INIT
+    setTopbarDate();
+    checkAuth();
+    if (sessionStorage.getItem('fl_auth')) refreshDashboard();
+  </script>
 </body>
+
 </html>
